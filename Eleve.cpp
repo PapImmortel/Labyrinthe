@@ -32,6 +32,9 @@ struct _Heros
 	bool hasKey = false;
 	bool hasPistolet = false;
 	bool nbBalles = 0;
+	bool nbVie = 3;
+	bool getNbVie() { return nbVie; }
+	void setNbVie() { nbVie = nbVie-1; }
 	bool getHasKey() { return hasKey; }
 	void setHasKey() { hasKey = true;}
 
@@ -207,16 +210,32 @@ void takeKey(Rectangle rectHero)
 		G.Heros.setHasKey();
 	}
 }
-void collision(Rectangle rectHero, Rectangle rectContact)
+void collision(Rectangle rectHero, Rectangle rectMomie)
 {
-	if (InterRectRect(rectHero, rectContact))
+	if (InterRectRect(rectHero, rectMomie))
 	{
-		if (G2D::IsKeyPressed(Key::LEFT))  G.Heros.Pos.x++;
-		if (G2D::IsKeyPressed(Key::RIGHT)) G.Heros.Pos.x--;
-		if (G2D::IsKeyPressed(Key::UP))    G.Heros.Pos.y--;
-		if (G2D::IsKeyPressed(Key::DOWN))  G.Heros.Pos.y++;
+		G.Heros.Pos = V2(45, 45);
+		G.Heros.setNbVie();
+		if (G.Heros.getNbVie() == 0)
+		{
+			cout<<"VousetesAChier, DEfaite";
+		}
 	}
 };
+
+void coffreFin(Rectangle rectHero)
+{
+	Rectangle rectChest = Rectangle(G.Chest.Pos.x, G.Chest.Pos.y, G.Chest.Pos.x + G.Chest.Size.x, G.Chest.Pos.y + G.Chest.Size.y);
+	if (InterRectRect(rectHero, rectChest))
+	{
+		if (G.Heros.getHasKey())
+		{
+			cout<<"FInDUJEUBITCH()";
+		}
+	}
+}
+
+
 void collision(_Heros& heros)
 {
 	Rectangle rectHero = Rectangle(G.Heros.Pos.x, G.Heros.Pos.y, G.Heros.Pos.x + G.Heros.Size.x, G.Heros.Pos.y + G.Heros.Size.y);
@@ -234,10 +253,7 @@ void collision(_Heros& heros)
 			collision(rectHero,rectMomie);
 		}
 	// ? héros/coffre
-	Rectangle rectChest = Rectangle(G.Chest.Pos.x, G.Chest.Pos.y, G.Chest.Pos.x + G.Chest.Size.x, G.Chest.Pos.y + G.Chest.Size.y);
-	collision(rectHero,rectChest);
-
-	
+	coffreFin(rectHero);
 }
 
 
