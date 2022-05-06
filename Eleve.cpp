@@ -21,7 +21,11 @@ struct Rectangle
 {
 	int xMin, xMax, yMin, yMax;
 	Rectangle(int _xMin, int _yMin, int _xMax, int _yMax) { xMin = _xMin, xMax = _xMax, yMin = _yMin, yMax = _yMax; }
+	V2 getCoordonneeMin() { return V2(xMin, yMin); }
+	V2 getCoordonneeMax() { return V2(xMax, yMax); }
+
 };
+
 struct _Heros
 {
 	int xMin, xMax, yMin, yMax, width;
@@ -117,6 +121,7 @@ struct _Momie
 	//V2 Pos = V2(230, 250);
 	V2 Pos;
 	V2 Dir;
+	int changeCompteur = 50;
 	_Momie(V2 _Pos) { Pos = _Pos; Dir =V2(1,0); }
 	V2 getMomieDir() { return Dir; }
 	void setMomieDir(V2 _Dir) { Dir = _Dir; }
@@ -223,6 +228,7 @@ void affichage_ecran_accueil() {
 	G2D::DrawStringFontMono(V2(80, 300), "Appuyez sur ENTER pour continuer.", 20,
 		3, Color::Green);
 }
+
 void affichage_ecran_options() {
 	G2D::DrawStringFontMono(V2(100, 500), "Choisissez votre difficulte !", 23, 3,
 		Color::White);
@@ -236,6 +242,7 @@ void affichage_ecran_options() {
 		"Appuyez sur C pour lancer le mode DIFFICILE", 16, 3,
 		Color::Red);
 }
+
 void affichage_init_partie() {
 	G2D::DrawStringFontMono(V2(220, 300), "Chargement...", 20, 3, Color::White);
 	G2D::DrawCircle(V2(150, 250), 50, Color::Green);
@@ -283,12 +290,14 @@ void affichage_ecran_jeu()
 	G2D::DrawStringFontMono(V2(100, 20), vies, 20, 3, Color::Green);
 
 }
+
 void affichage_ecran_game_over() {
 	G2D::DrawStringFontMono(V2(70, 500), "Game over", 80, 10, Color::Red);
 	G2D::DrawStringFontMono(V2(50, 300),
 		"Appuyez sur ENTER pour faire une autre partie.", 16,
 		3, Color::Green);
 }
+
 void affichage_ecran_win() {
 	G2D::DrawStringFontMono(V2(70, 500), "You WIN !!!!", 80, 10, Color::Green);
 	G2D::DrawStringFontMono(V2(50, 300),"Appuyez sur ENTER pour faire une autre partie.", 16,3, Color::White);
@@ -329,6 +338,7 @@ void murCollision()
 		if (G2D::IsKeyPressed(Key::DOWN))  G.Heros.Pos.y++;
 	}
 };
+
 void takeKey()
 {
 	if (InterRectRect(G.Heros.getRect(), G.Key.getRect()))
@@ -336,6 +346,7 @@ void takeKey()
 		G.Heros.setHasKey();
 	}
 }
+
 void collision(Rectangle rectMomie)
 {
 	if (InterRectRect(G.Heros.getRect(), rectMomie))
@@ -344,6 +355,7 @@ void collision(Rectangle rectMomie)
 		G.Heros.setNbVies(G.Heros.getNbVies()-1);
 	}
 };
+
 
 void coffreFin()
 {
@@ -377,31 +389,79 @@ void collision(_Heros& heros)
 	coffreFin();
 }
 
+void collision(_Momie& momie, Rectangle rectMomie2)
+{
+	
+	if (InterRectRect(momie.getRect(), rectMomie2))
+	{
+		momie.Dir = -momie.Dir;
+		momie.changeCompteur = 50;
+		/*V2 Dir[4] = { V2(0,1), V2(1,0), V2(0,-1), V2(-1,0) };
+		int rd = rand() % 4;
+		while (-Dir[rd] == momie.Dir)
+		{
+			rd = rand() % 4;
+		}
+		momie.Dir = Dir[rd];
+		momie.changeCompteur = 50;*/
+	}
+}
 
 void DeplacementMomies(_Momie  & momie)
 {
+	Rectangle rectMomie = momie.getRect();
+	for (int i = 0; i < 3; i++)
+	{
+		Rectangle rectNewMomie = G.MomieListe[i].getRect();
+		if (!((rectNewMomie.getCoordonneeMin()== rectMomie.getCoordonneeMin()) && (rectNewMomie.getCoordonneeMax() == rectMomie.getCoordonneeMax())))
+		{
+			collision(momie, rectNewMomie);
+		}
+
+	}
 	V2 newPos = momie.Pos + momie.Dir;
+
+	
 
 	if (!((G.Mur(newPos.x / 40, newPos.y / 40)) || (G.Mur((newPos.x + momie.Size.x) / 40, (newPos.y + momie.Size.y) / 40)) || (G.Mur((newPos.x) / 40, (newPos.y + momie.Size.y) / 40)) || (G.Mur((newPos.x + momie.Size.x) / 40, (newPos.y) / 40))))
 	{
+		if (momie.changeCompteur == 0)
+		{
+			V2 Dir[4] = { V2(0,1), V2(1,0), V2(0,-1), V2(-1,0) };
+			int rd = rand() % 4;
+			while (-Dir[rd] == momie.Dir)
+			{
+				rd = rand() % 4;
+			}
+			momie.Dir = Dir[rd];
+			momie.changeCompteur = 50;
+		}
+		momie.changeCompteur -= 1;
 		momie.Pos = newPos;
 	}
 	else
 	{
 		V2 Dir[4] = { V2(0,1), V2(1,0), V2(0,-1), V2(-1,0) };
 		int rd = rand()%4;
+		while (-Dir[rd] == momie.Dir)
+		{
+			rd = rand() % 4;
+		}
 		momie.Dir = Dir[rd];
+		momie.changeCompteur = 50;
 	}
-		
+	
 	
 
 }
+
 int gestion_ecran_accueil() {
 	if (G2D::IsKeyPressed(Key::ENTER)) {
 		return 1;
 	}
 	return 0;
 }
+
 int gestion_ecran_options() {
 	// * facile
 	if (G2D::IsKeyPressed(Key::A)) {
@@ -420,6 +480,7 @@ int gestion_ecran_options() {
 	}
 	return 1;
 }
+
 int InitPartie() {
 	G.Heros.hasKey = false;
 	G.Heros.setNbVies(3);
@@ -443,6 +504,7 @@ int gestion_ecran_game_over() {
 	}
 	return 4;
 }
+
 int gestion_ecran_win() {
 	if (G2D::IsKeyPressed(Key::ENTER)) {
 		return 1;
@@ -527,5 +589,4 @@ int main(int argc, char* argv[])
 	G2D::Run(Logic, render);
 
 }
-
 
