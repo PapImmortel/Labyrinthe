@@ -10,6 +10,18 @@
 
 using namespace std;
 
+#define ECRAN_ACCUEIL 0
+#define ECRAN_OPTIONS 1
+#define INIT_PARTIE 2
+#define ECRAN_JEU 3
+#define ECRAN_GAME_OVER 4
+#define ECRAN_WIN 5
+
+struct Rectangle
+{
+	int xMin, xMax, yMin, yMax;
+	Rectangle(int _xMin, int _yMin, int _xMax, int _yMax) { xMin = _xMin, xMax = _xMax, yMin = _yMin, yMax = _yMax; }
+};
 struct _Heros
 {
 	int xMin, xMax, yMin, yMax, width;
@@ -44,15 +56,17 @@ struct _Heros
 	V2 Pos = V2(45, 45);
 	bool hasKey = false;
 	bool hasPistolet = false;
-	bool nbBalles = 0;
-	bool nbVie = 3;
+	int nbBalles = 0;
+	int nbVies = 3;
 	bool typeTexture = false;
 	int numTexture = 10;
-	bool getNbVie() { return nbVie; }
-	void setNbVie() { nbVie = nbVie-1; }
+	int getNbVies() { return nbVies; }
+	void setNbVies(int _nbVies) { nbVies = _nbVies; }
 	bool getHasKey() { return hasKey; }
 	void setHasKey() { hasKey = true;}
-	bool getTexture() { return typeTexture; }
+	Rectangle getRect() {
+		return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
+	}
 	void changeTexture() 
 	{ 
 		if (numTexture > 0)
@@ -106,6 +120,10 @@ struct _Momie
 	_Momie(V2 _Pos) { Pos = _Pos; Dir =V2(1,0); }
 	V2 getMomieDir() { return Dir; }
 	void setMomieDir(V2 _Dir) { Dir = _Dir; }
+	Rectangle getRect() 
+	{
+		return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
+	}
 };
 
 struct _Key
@@ -122,6 +140,10 @@ struct _Key
 	V2 Size;
 	int IdTex;
 	V2 Pos = V2(440, 450);
+	Rectangle getRect()
+	{
+		return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
+	}
 };
 
 struct _Chest
@@ -137,14 +159,15 @@ struct _Chest
 	V2 Size;
 	int IdTex;
 	V2 Pos = V2(405, 50);
+	bool isOpened = false;
+	Rectangle getRect() 
+	{
+		return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
+	}
 
 };
 
-struct Rectangle
-{
-	int xMin, xMax, yMin, yMax;
-	Rectangle(int _xMin, int _yMin, int _xMax, int _yMax) { xMin = _xMin, xMax = _xMax, yMin = _yMin, yMax = _yMax; }
-};
+
 struct GameData
 {
 
@@ -176,7 +199,8 @@ struct GameData
 	_Key   Key;
 	_Chest Chest;
 	_Momie MomieListe[3] = {_Momie(V2(230, 250)), _Momie(V2(130, 420)), _Momie(V2(370,470)) };
-
+	int difficulty = 0;
+	int ecran = 0;
 	GameData() {}
 
 };
@@ -193,10 +217,35 @@ bool InterRectRect(Rectangle R1, Rectangle R2)
 	return true;
 };
 
-void render()
-{
-	G2D::ClearScreen(Color::Black);
+void affichage_ecran_accueil() {
+	G2D::DrawStringFontMono(V2(50, 400), "Bienvenue dans le jeu du labyrinthe !",
+		20, 4, Color::White);
+	G2D::DrawStringFontMono(V2(80, 300), "Appuyez sur ENTER pour continuer.", 20,
+		3, Color::Green);
+}
+void affichage_ecran_options() {
+	G2D::DrawStringFontMono(V2(100, 500), "Choisissez votre difficulte !", 23, 3,
+		Color::White);
+	G2D::DrawStringFontMono(V2(50, 300),
+		"Appuyez sur A pour lancer le mode FACILE", 16, 3,
+		Color::Green);
+	G2D::DrawStringFontMono(V2(50, 250),
+		"Appuyez sur B pour lancer le mode MOYEN", 16, 3,
+		Color::Yellow);
+	G2D::DrawStringFontMono(V2(50, 200),
+		"Appuyez sur C pour lancer le mode DIFFICILE", 16, 3,
+		Color::Red);
+}
+void affichage_init_partie() {
+	G2D::DrawStringFontMono(V2(220, 300), "Chargement...", 20, 3, Color::White);
+	G2D::DrawCircle(V2(150, 250), 50, Color::Green);
+	G2D::DrawCircle(V2(450, 450), 30, Color::Cyan);
+	G2D::DrawCircle(V2(250, 550), 60, Color::Blue);
+	G2D::DrawCircle(V2(500, 50), 30, Color::Magenta);
+}
 
+void affichage_ecran_jeu()
+{
 	for (int x = 0; x < 15; x++)
 		for (int y = 0; y < 15; y++)
 		{
@@ -228,49 +277,82 @@ void render()
 		G2D::DrawRectWithTexture(G.MomieListe[i].IdTex, G.MomieListe[i].Pos, G.MomieListe[i].Size);
 
 	}
+	G2D::DrawStringFontMono(V2(100, 580), "Partie en cours", 20, 3, Color::Green);
+
+	string vies = "Nombre de vies : " + std::to_string(G.Heros.getNbVies());
+	G2D::DrawStringFontMono(V2(100, 20), vies, 20, 3, Color::Green);
+
+}
+void affichage_ecran_game_over() {
+	G2D::DrawStringFontMono(V2(70, 500), "Game over", 80, 10, Color::Red);
+	G2D::DrawStringFontMono(V2(50, 300),
+		"Appuyez sur ENTER pour faire une autre partie.", 16,
+		3, Color::Green);
+}
+void affichage_ecran_win() {
+	G2D::DrawStringFontMono(V2(70, 500), "You WIN !!!!", 80, 10, Color::Green);
+	G2D::DrawStringFontMono(V2(50, 300),"Appuyez sur ENTER pour faire une autre partie.", 16,3, Color::White);
+}
+
+void render() {
+	G2D::ClearScreen(Color::Black);
+	if (G.ecran == ECRAN_ACCUEIL) {
+		affichage_ecran_accueil();
+	}
+	if (G.ecran == ECRAN_OPTIONS) {
+		affichage_ecran_options();
+	}
+	if (G.ecran == INIT_PARTIE) {
+		affichage_init_partie();
+	}
+	if (G.ecran == ECRAN_JEU) {
+		affichage_ecran_jeu();
+	}
+	if (G.ecran == ECRAN_GAME_OVER) {
+		affichage_ecran_game_over();
+	}
+	if (G.ecran == ECRAN_WIN) {
+		affichage_ecran_win();
+	}
 	G2D::Show();
 }
+
 void murCollision()
 {
-	bool tapeUnCoin = (G.Mur(G.Heros.Pos.x / 40, G.Heros.Pos.y / 40)) || (G.Mur((G.Heros.Pos.x + G.Heros.Size.x) / 40, (G.Heros.Pos.y + G.Heros.Size.y) / 40)) || (G.Mur((G.Heros.Pos.x) / 40, (G.Heros.Pos.y + G.Heros.Size.y) / 40)) || (G.Mur((G.Heros.Pos.x + G.Heros.Size.x) / 40, (G.Heros.Pos.y) / 40));
+	bool tapeMur = (G.Mur(G.Heros.Pos.x / 40, G.Heros.Pos.y / 40)) || (G.Mur((G.Heros.Pos.x + G.Heros.Size.x) / 40, (G.Heros.Pos.y + G.Heros.Size.y) / 40)) || (G.Mur((G.Heros.Pos.x) / 40, (G.Heros.Pos.y + G.Heros.Size.y) / 40)) || (G.Mur((G.Heros.Pos.x + G.Heros.Size.x) / 40, (G.Heros.Pos.y) / 40));
 
 
-	if (tapeUnCoin) {
+	if (tapeMur) {
 		if (G2D::IsKeyPressed(Key::LEFT))  G.Heros.Pos.x++;
 		if (G2D::IsKeyPressed(Key::RIGHT)) G.Heros.Pos.x--;
 		if (G2D::IsKeyPressed(Key::UP))    G.Heros.Pos.y--;
 		if (G2D::IsKeyPressed(Key::DOWN))  G.Heros.Pos.y++;
 	}
 };
-void takeKey(Rectangle rectHero)
+void takeKey()
 {
-	Rectangle rectKey = Rectangle(G.Key.Pos.x, G.Key.Pos.y, G.Key.Pos.x + G.Key.Size.x, G.Key.Pos.y + G.Key.Size.y);
-	if (InterRectRect(rectHero, rectKey))
+	if (InterRectRect(G.Heros.getRect(), G.Key.getRect()))
 	{
 		G.Heros.setHasKey();
 	}
 }
-void collision(Rectangle rectHero, Rectangle rectMomie)
+void collision(Rectangle rectMomie)
 {
-	if (InterRectRect(rectHero, rectMomie))
+	if (InterRectRect(G.Heros.getRect(), rectMomie))
 	{
 		G.Heros.Pos = V2(45, 45);
-		G.Heros.setNbVie();
-		if (G.Heros.getNbVie() == 0)
-		{
-			cout<<"VousetesAChier, DEfaite";
-		}
+		G.Heros.setNbVies(G.Heros.getNbVies()-1);
 	}
 };
 
-void coffreFin(Rectangle rectHero)
+void coffreFin()
 {
-	Rectangle rectChest = Rectangle(G.Chest.Pos.x, G.Chest.Pos.y, G.Chest.Pos.x + G.Chest.Size.x, G.Chest.Pos.y + G.Chest.Size.y);
-	if (InterRectRect(rectHero, rectChest))
+	if (InterRectRect(G.Heros.getRect(), G.Chest.getRect()))
 	{
 		if (G.Heros.getHasKey())
 		{
-			cout<<"FInDUJEUBITCH()";
+			G.Chest.isOpened = true;
+
 		}
 	}
 }
@@ -278,41 +360,24 @@ void coffreFin(Rectangle rectHero)
 
 void collision(_Heros& heros)
 {
-	Rectangle rectHero = Rectangle(G.Heros.Pos.x, G.Heros.Pos.y, G.Heros.Pos.x + G.Heros.Size.x, G.Heros.Pos.y + G.Heros.Size.y);
 	// ? héros/mur
 	murCollision();
 	// ? héros/clé
-	if (G.Heros.getHasKey() == false)
+	if (heros.getHasKey() == false)
 	{
-		takeKey(rectHero);
+		takeKey();
 	}
 	// ? héros/momies
 	for (int i = 0; i < 3; i++)
 		{
-			Rectangle rectMomie = Rectangle(G.MomieListe[i].Pos.x, G.MomieListe[i].Pos.y, G.MomieListe[i].Pos.x + G.MomieListe[i].Size.x, G.MomieListe[i].Pos.y + G.MomieListe[i].Size.y);
-			collision(rectHero,rectMomie);
+			Rectangle rectMomie = G.MomieListe[i].getRect();
+			collision(rectMomie);
 		}
 	// ? héros/coffre
-	coffreFin(rectHero);
+	coffreFin();
 }
 
 
-
-//void momieCollision()
-//{	
-//	Rectangle rectHero = Rectangle(G.Heros.Pos.x, G.Heros.Pos.y, G.Heros.Pos.x + G.Heros.Size.x, G.Heros.Pos.y + G.Heros.Size.y);
-//	for (int i = 0; i < 3; i++)
-//	{
-//		Rectangle rectMomie = Rectangle(G.MomieListe[i].Pos.x, G.MomieListe[i].Pos.y, G.MomieListe[i].Pos.x + G.MomieListe[i].Size.x, G.MomieListe[i].Pos.y + G.MomieListe[i].Size.y);
-//		if (InterRectRect(rectHero, rectMomie))
-//		{
-//			if (G2D::IsKeyPressed(Key::LEFT))  G.Heros.Pos.x++;
-//			if (G2D::IsKeyPressed(Key::RIGHT)) G.Heros.Pos.x--;
-//			if (G2D::IsKeyPressed(Key::UP))    G.Heros.Pos.y--;
-//			if (G2D::IsKeyPressed(Key::DOWN))  G.Heros.Pos.y++;
-//		}
-//	}	
-//};
 void DeplacementMomies(_Momie  & momie)
 {
 	V2 newPos = momie.Pos + momie.Dir;
@@ -331,11 +396,61 @@ void DeplacementMomies(_Momie  & momie)
 	
 
 }
+int gestion_ecran_accueil() {
+	if (G2D::IsKeyPressed(Key::ENTER)) {
+		return 1;
+	}
+	return 0;
+}
+int gestion_ecran_options() {
+	// * facile
+	if (G2D::IsKeyPressed(Key::A)) {
+		G.difficulty = 0;
+		return 2;
+	}
+	// * moyen
+	if (G2D::IsKeyPressed(Key::B)) {
+		G.difficulty = 1;
+		return 2;
+	}
+	// * difficile
+	if (G2D::IsKeyPressed(Key::C)) {
+		G.difficulty = 2;
+		return 2;
+	}
+	return 1;
+}
+int InitPartie() {
+	G.Heros.hasKey = false;
+	G.Heros.setNbVies(3);
+	G.Heros.hasPistolet = false;
+	G.Heros.nbBalles = 0;
+	G.Heros.Pos = V2(45, 45);
+
+	G.Key.Pos = V2(440, 450);
+	G.Chest.isOpened = false;
+
+	if (G2D::IsKeyPressed(Key::ENTER)) {
+		return 3;
+	}
+	return 2;
+}
 
 
+int gestion_ecran_game_over() {
+	if (G2D::IsKeyPressed(Key::ENTER)) {
+		return 1;
+	}
+	return 4;
+}
+int gestion_ecran_win() {
+	if (G2D::IsKeyPressed(Key::ENTER)) {
+		return 1;
+	}
+	return 5;
+}
 
-
-void Logic()
+int gestion_ecran_jeu()
 {
 	if (G2D::IsKeyPressed(Key::LEFT)) { G.Heros.Pos.x--;	G.Heros.changeTexture(); }
 
@@ -343,21 +458,43 @@ void Logic()
 }
 	if (G2D::IsKeyPressed(Key::UP))    {G.Heros.Pos.y++; G.Heros.changeTexture(); }
 	if (G2D::IsKeyPressed(Key::DOWN)) { G.Heros.Pos.y--; G.Heros.changeTexture(); }
-	//murCollision();
 
-	Rectangle rectChest = Rectangle(G.Chest.Pos.x, G.Chest.Pos.y, G.Chest.Pos.x + G.Chest.Size.x, G.Chest.Pos.y + G.Chest.Size.y);
-	Rectangle rectKey = Rectangle(G.Key.Pos.x, G.Key.Pos.y, G.Key.Pos.x + G.Key.Size.x, G.Key.Pos.y + G.Key.Size.y);
-	//herosCollision(G.rectMomie);
-	//keyCollision();
-	//chestCollision();
+	collision(G.Heros);
 	for (int i = 0; i < 3; i++)
 	{
 		DeplacementMomies(G.MomieListe[i]);
 	}
-	collision(G.Heros);
-
+	if (G.Chest.isOpened) {
+		return 5;
+	}
+	if (G.Heros.getNbVies() == 0) {
+		return 4;
+	}
+	return 3;
 }
 
+void Logic() {
+	if (G.ecran == ECRAN_ACCUEIL) {
+		G.ecran = gestion_ecran_accueil();
+	}
+
+	if (G.ecran == ECRAN_OPTIONS) {
+		G.ecran = gestion_ecran_options();
+	}
+	if (G.ecran == INIT_PARTIE) {
+		G.ecran = InitPartie();
+	}
+	if (G.ecran == ECRAN_JEU) {
+		G.ecran = gestion_ecran_jeu();
+	}
+
+	if (G.ecran == ECRAN_GAME_OVER) {
+		G.ecran = gestion_ecran_game_over();
+	}
+	if (G.ecran == ECRAN_WIN) {
+		G.ecran = gestion_ecran_win();
+	}
+}
 
 void AssetsInit()
 {
@@ -383,7 +520,6 @@ void AssetsInit()
 
 int main(int argc, char* argv[])
 {
-	cout << "IDEX"<<G.Heros.IdTex;
 	G2D::InitWindow(argc, argv, V2(G.Lpix * 15, G.Lpix * 15), V2(200, 200), string("Labyrinthe"));
 
 	AssetsInit();
