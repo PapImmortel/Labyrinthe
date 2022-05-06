@@ -82,7 +82,7 @@ struct _Heros
 		else if(typeTexture)
 		{
 
-			numTexture = 10;
+			numTexture = 1;
 			typeTexture = !typeTexture;
 			IdTex = G2D::InitTextureFromString(Size, texture);
 			Size = Size * 2; // on peut zoomer la taille du sprite
@@ -90,7 +90,7 @@ struct _Heros
 		}
 		else
 		{
-			numTexture = 10;
+			numTexture = 1;
 			typeTexture = !typeTexture;
 			IdTex = G2D::InitTextureFromString(Size, texture2);
 			Size = Size * 2; // on peut zoomer la taille du sprite
@@ -238,7 +238,7 @@ struct GameData
 	_Gun   Gun;
 
 	_Chest Chest;
-	_Momie MomieListe[3] = {_Momie(V2(230, 250)), _Momie(V2(130, 420)), _Momie(V2(370,470)) };
+	vector<_Momie> momies = {};
 	int difficulty = 0;
 	int ecran = 0;
 	GameData() {}
@@ -319,9 +319,9 @@ void affichage_ecran_jeu()
 	G2D::DrawRectWithTexture(G.Chest.IdTex, G.Chest.Pos, G.Chest.Size);
 
 	// affichage d'une Momie
-	for (int i = 0; i < 3; i = i + 1)
+	for (_Momie& momie : G.momies)
 	{
-		G2D::DrawRectWithTexture(G.MomieListe[i].IdTex, G.MomieListe[i].Pos, G.MomieListe[i].Size);
+		G2D::DrawRectWithTexture(momie.IdTex, momie.Pos, momie.Size);
 
 	}
 	G2D::DrawStringFontMono(V2(100, 580), "Partie en cours", 20, 3, Color::Green);
@@ -386,6 +386,13 @@ void takeKey()
 		G.Heros.setHasKey();
 	}
 }
+void takeGun()
+{
+	if (InterRectRect(G.Heros.getRect(), G.Gun.getRect()))
+	{
+		G.Heros.setHasGun();
+	}
+}
 
 void collision(Rectangle rectMomie)
 {
@@ -419,10 +426,14 @@ void collision(_Heros& heros)
 	{
 		takeKey();
 	}
+	if (heros.getHasGun() == false)
+	{
+		takeGun();
+	}
 	// ? héros/momies
-	for (int i = 0; i < 3; i++)
+	for (_Momie& momie : G.momies)
 		{
-			Rectangle rectMomie = G.MomieListe[i].getRect();
+			Rectangle rectMomie = momie.getRect();
 			collision(rectMomie);
 		}
 	// ? héros/coffre
@@ -436,23 +447,16 @@ void collision(_Momie& momie, Rectangle rectMomie2)
 	{
 		momie.Dir = -momie.Dir;
 		momie.changeCompteur = 50;
-		/*V2 Dir[4] = { V2(0,1), V2(1,0), V2(0,-1), V2(-1,0) };
-		int rd = rand() % 4;
-		while (-Dir[rd] == momie.Dir)
-		{
-			rd = rand() % 4;
-		}
-		momie.Dir = Dir[rd];
-		momie.changeCompteur = 50;*/
+		
 	}
 }
 
 void DeplacementMomies(_Momie  & momie)
 {
 	Rectangle rectMomie = momie.getRect();
-	for (int i = 0; i < 3; i++)
+	for (_Momie& newMomie : G.momies)
 	{
-		Rectangle rectNewMomie = G.MomieListe[i].getRect();
+		Rectangle rectNewMomie = newMomie.getRect();
 		if (!((rectNewMomie.getCoordonneeMin()== rectMomie.getCoordonneeMin()) && (rectNewMomie.getCoordonneeMax() == rectMomie.getCoordonneeMax())))
 		{
 			collision(momie, rectNewMomie);
@@ -531,7 +535,29 @@ int InitPartie() {
 	G.Key.Pos = V2(440, 450);
 	G.Chest.isOpened = false;
 
+	// G.momies.clear();
 	if (G2D::IsKeyPressed(Key::ENTER)) {
+		G.momies.clear();
+		if (G.difficulty >= 2) {
+			// ? difficile
+			G.momies.push_back(_Momie(V2(529, 380)));
+			G.momies.push_back(_Momie(V2(485, 205)));
+		}
+		if (G.difficulty >= 1) {
+			// ? moyen
+			G.momies.push_back(_Momie(V2(43, 525)));
+			G.momies.push_back(_Momie(V2(316, 45)));
+		}
+		if (G.difficulty >= 0) {
+			// ? facile
+			G.momies.push_back(_Momie(V2(250, 250)));
+			G.momies.push_back(_Momie(V2(130, 420)));
+			G.momies.push_back(_Momie(V2(370, 470)));
+		}
+		for (_Momie& momie : G.momies) {
+			momie.IdTex = G2D::InitTextureFromString(momie.Size, momie.texture);
+			momie.Size = momie.Size * 2; // on peut zoomer la taille du sprite
+		}
 		return 3;
 	}
 	return 2;
@@ -562,9 +588,9 @@ int gestion_ecran_jeu()
 	if (G2D::IsKeyPressed(Key::DOWN)) { G.Heros.Pos.y--; G.Heros.changeTexture(); }
 
 	collision(G.Heros);
-	for (int i = 0; i < 3; i++)
+	for (_Momie& momie : G.momies)
 	{
-		DeplacementMomies(G.MomieListe[i]);
+		DeplacementMomies(momie);
 	}
 	if (G.Chest.isOpened) {
 		return 5;
@@ -614,11 +640,6 @@ void AssetsInit()
 	G.Chest.IdTex = G2D::InitTextureFromString(G.Chest.Size, G.Chest.texture);
 	G.Chest.Size = G.Chest.Size * 2.5; // on peut zoomer la taille du sprite
 
-	for (int i = 0; i < 3; i = i + 1)
-	{
-		G.MomieListe[i].IdTex = G2D::InitTextureFromString(G.MomieListe[i].Size, G.MomieListe[i].texture);
-		G.MomieListe[i].Size = G.MomieListe[i].Size * 2; // on peut zoomer la taille du sprite
-	}
 	
 
 }
