@@ -26,6 +26,8 @@ struct Rectangle
 
 };
 
+
+
 struct _Heros
 {
 	int xMin, xMax, yMin, yMax, width;
@@ -82,7 +84,7 @@ struct _Heros
 		else if(typeTexture)
 		{
 
-			numTexture = 1;
+			numTexture = 10;
 			typeTexture = !typeTexture;
 			IdTex = G2D::InitTextureFromString(Size, texture);
 			Size = Size * 2; // on peut zoomer la taille du sprite
@@ -90,7 +92,7 @@ struct _Heros
 		}
 		else
 		{
-			numTexture = 1;
+			numTexture = 10;
 			typeTexture = !typeTexture;
 			IdTex = G2D::InitTextureFromString(Size, texture2);
 			Size = Size * 2; // on peut zoomer la taille du sprite
@@ -152,7 +154,63 @@ struct _Key
 		return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
 	}
 };
-
+struct _Bullet 
+{
+	string textureNorth =
+		"[  OO  ]"
+		"[ YOOY ]"
+		"[ YOOY ]"
+		"[ YOOY ]"
+		"[ YOOY ]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[ YOOY ]"
+		"[YOOOOY]"
+		"[OOOOOO]";
+	string textureSouth =
+		"[OOOOOO]"
+		"[YOOOOY]"
+		"[ YOOY ]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[YOOOOY]"
+		"[ YOOY ]"
+		"[ YOOY ]"
+		"[ YOOY ]"
+		"[ YOOY ]"
+		"[  OO  ]";
+		
+	string textureEast =
+		"[GG GGGGGGG     ]"
+		"[GYGYYYYYYYGGGG ]"
+		"[GYYYYYYYYYYYYYG]"
+		"[GYYYYYYYYYYYYYG]"
+		"[GYGYYYYYYYGGGG ]"
+		"[GG GGGGGGG     ]";
+	string textureWeast =
+		"[     GGGGGGG GG]"
+		"[ GGGGYYYYYYYGYG]"
+		"[GYYYYYYYYYYYYYG]"
+		"[GYYYYYYYYYYYYYG]"
+		"[ GGGGYYYYYYYGYG]"
+		"[     GGGGGGG GG]";
+	V2 Size;
+	int IdTex;
+	V2 Pos = V2(350, 250);
+	Rectangle getRect()
+	{
+		return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
+	}
+};
 struct _Chest
 {
 	string texture =
@@ -236,7 +294,7 @@ struct GameData
 
 	_Key   Key;
 	_Gun   Gun;
-
+	_Bullet Bullet;
 	_Chest Chest;
 	vector<_Momie> momies = {};
 	int difficulty = 0;
@@ -325,6 +383,8 @@ void affichage_ecran_jeu()
 
 	}
 	G2D::DrawStringFontMono(V2(100, 580), "Partie en cours", 20, 3, Color::Green);
+	// affichage bullet
+	G2D::DrawRectWithTexture(G.Bullet.IdTex, G.Bullet.Pos, G.Bullet.Size);
 
 	string vies = "Nombre de vies : " + std::to_string(G.Heros.getNbVies());
 	G2D::DrawStringFontMono(V2(100, 20), vies, 20, 3, Color::Green);
@@ -637,6 +697,10 @@ void AssetsInit()
 	G.Gun.IdTex = G2D::InitTextureFromString(G.Gun.Size, G.Gun.texture);
 	G.Gun.Size = G.Gun.Size * 0.8; // on peut zoomer la taille du sprite
 
+	//Bullet affichage test
+	G.Bullet.IdTex = G2D::InitTextureFromString(G.Bullet.Size, G.Bullet.textureWeast);
+	G.Bullet.Size = G.Bullet.Size * 0.8; // on peut zoomer la taille du sprite
+
 	G.Chest.IdTex = G2D::InitTextureFromString(G.Chest.Size, G.Chest.texture);
 	G.Chest.Size = G.Chest.Size * 2.5; // on peut zoomer la taille du sprite
 
@@ -653,4 +717,3 @@ int main(int argc, char* argv[])
 	G2D::Run(Logic, render);
 
 }
-
