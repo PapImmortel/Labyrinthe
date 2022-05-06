@@ -59,7 +59,7 @@ struct _Heros
 	int IdTex;
 	V2 Pos = V2(45, 45);
 	bool hasKey = false;
-	bool hasPistolet = false;
+	bool hasGun = false;
 	int nbBalles = 0;
 	int nbVies = 3;
 	bool typeTexture = false;
@@ -68,6 +68,8 @@ struct _Heros
 	void setNbVies(int _nbVies) { nbVies = _nbVies; }
 	bool getHasKey() { return hasKey; }
 	void setHasKey() { hasKey = true;}
+	bool getHasGun() { return hasGun; }
+	void setHasGun() { hasGun = true; }
 	Rectangle getRect() {
 		return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
 	}
@@ -172,7 +174,38 @@ struct _Chest
 
 };
 
+struct _Gun
+{
+	string texture =
+		"[   O                        ]"
+		"[  OGO                    OGO]"
+		"[  OGGOOOOOOOOOOOOOOOOOOOOGGO]"
+		"[   OGGMMGGGGGGMMMMMMMMMMMGO ]"
+		"[    OMMSSGGGGSSGGGGGGGGGGGOO]"
+		"[    OMSSSSSSSSOWWOWWOWWOGGOO]"
+		"[    OMSSSSSSSOWWOWWOWWOWWGOO]"
+		"[  OOMMSSWWSOOOOOOMMMMMMMMMO ]"
+		"[ OMMMSSWWWOO   O OMOMOMOMO  ]"
+		"[OMSSSSWWWWO O  O  O O O O   ]"
+		"[OMOOOSWWWWO    O            ]"
+		"[OO  OWWWWWOOOOO             ]"
+		"[    OWWWWWO                 ]"
+		"[    OWWWWWO                 ]"
+		"[    OWWWWWO                 ]"
+		"[    OWWYWWO                 ]"
+		"[    OWWWWWO                 ]"
+		"[     OOOOO                  ]";
 
+
+
+	V2 Size;
+	int IdTex;
+	V2 Pos = V2(325, 200);
+	Rectangle getRect()
+	{
+		return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
+	}
+};
 struct GameData
 {
 
@@ -202,6 +235,8 @@ struct GameData
 
 
 	_Key   Key;
+	_Gun   Gun;
+
 	_Chest Chest;
 	_Momie MomieListe[3] = {_Momie(V2(230, 250)), _Momie(V2(130, 420)), _Momie(V2(370,470)) };
 	int difficulty = 0;
@@ -273,6 +308,11 @@ void affichage_ecran_jeu()
 	if (G.Heros.getHasKey() == false)
 	{
 		G2D::DrawRectWithTexture(G.Key.IdTex, G.Key.Pos, G.Key.Size);
+	}
+
+	if (G.Heros.getHasGun() == false)
+	{
+		G2D::DrawRectWithTexture(G.Gun.IdTex, G.Gun.Pos, G.Gun.Size);
 	}
 
 	// affichage du Chest 
@@ -484,7 +524,7 @@ int gestion_ecran_options() {
 int InitPartie() {
 	G.Heros.hasKey = false;
 	G.Heros.setNbVies(3);
-	G.Heros.hasPistolet = false;
+	G.Heros.hasGun = false;
 	G.Heros.nbBalles = 0;
 	G.Heros.Pos = V2(45, 45);
 
@@ -567,6 +607,9 @@ void AssetsInit()
 
 	G.Key.IdTex = G2D::InitTextureFromString(G.Key.Size, G.Key.texture);
 	G.Key.Size = G.Key.Size * 1.5; // on peut zoomer la taille du sprite
+
+	G.Gun.IdTex = G2D::InitTextureFromString(G.Gun.Size, G.Gun.texture);
+	G.Gun.Size = G.Gun.Size * 0.8; // on peut zoomer la taille du sprite
 
 	G.Chest.IdTex = G2D::InitTextureFromString(G.Chest.Size, G.Chest.texture);
 	G.Chest.Size = G.Chest.Size * 2.5; // on peut zoomer la taille du sprite
