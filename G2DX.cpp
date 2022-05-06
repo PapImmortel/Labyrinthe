@@ -58,7 +58,6 @@ void G2D::Show()
 void G2D::DrawRectWithTexture(int texture, V2 pos, V2 size, float angleDeg)
 {
 	glLineWidth(0);
-
 	float w = size.x;
 	float h = size.y;
 	const double MPI = 3.14159265358979323846;

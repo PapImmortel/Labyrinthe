@@ -26,6 +26,19 @@ struct _Heros
 		"[C C  ]"
 		"[C C  ]";
 
+	string texture2 =
+		"[RRR  ]"
+		"[RRWR ]"
+		"[RRR  ]"
+		"[YY   ]"
+		"[YYY  ]"
+		"[YY YG]"
+		"[GG   ]"
+		"[CC   ]"
+		"[CCCC ]"
+		"[C   C]"
+		"[C    ]";
+
 	V2 Size;
 	int IdTex;
 	V2 Pos = V2(45, 45);
@@ -33,11 +46,36 @@ struct _Heros
 	bool hasPistolet = false;
 	bool nbBalles = 0;
 	bool nbVie = 3;
+	bool typeTexture = false;
+	int numTexture = 10;
 	bool getNbVie() { return nbVie; }
 	void setNbVie() { nbVie = nbVie-1; }
 	bool getHasKey() { return hasKey; }
 	void setHasKey() { hasKey = true;}
+	bool getTexture() { return typeTexture; }
+	void changeTexture() 
+	{ 
+		if (numTexture > 0)
+		{
+			numTexture = numTexture - 1;
+		}
+		else if(typeTexture)
+		{
 
+			numTexture = 10;
+			typeTexture = !typeTexture;
+			IdTex = G2D::InitTextureFromString(Size, texture);
+			Size = Size * 2; // on peut zoomer la taille du sprite
+
+		}
+		else
+		{
+			numTexture = 10;
+			typeTexture = !typeTexture;
+			IdTex = G2D::InitTextureFromString(Size, texture2);
+			Size = Size * 2; // on peut zoomer la taille du sprite
+		}
+	}
 };
 
 struct _Momie
@@ -171,6 +209,8 @@ void render()
 	// affichage du héro avec boite englobante et zoom x 2
 	G2D::DrawRectangle(G.Heros.Pos, G.Heros.Size, Color::Red);
 	G2D::DrawRectWithTexture(G.Heros.IdTex, G.Heros.Pos, G.Heros.Size);
+	
+	
 
 	
 	// affichage de la clef
@@ -297,10 +337,12 @@ void DeplacementMomies(_Momie  & momie)
 
 void Logic()
 {
-	if (G2D::IsKeyPressed(Key::LEFT))  G.Heros.Pos.x--;
-	if (G2D::IsKeyPressed(Key::RIGHT)) G.Heros.Pos.x++;
-	if (G2D::IsKeyPressed(Key::UP))    G.Heros.Pos.y++;
-	if (G2D::IsKeyPressed(Key::DOWN))  G.Heros.Pos.y--;
+	if (G2D::IsKeyPressed(Key::LEFT)) { G.Heros.Pos.x--;	G.Heros.changeTexture(); }
+
+	if (G2D::IsKeyPressed(Key::RIGHT)) {G.Heros.Pos.x++; G.Heros.changeTexture();
+}
+	if (G2D::IsKeyPressed(Key::UP))    {G.Heros.Pos.y++; G.Heros.changeTexture(); }
+	if (G2D::IsKeyPressed(Key::DOWN)) { G.Heros.Pos.y--; G.Heros.changeTexture(); }
 	//murCollision();
 
 	Rectangle rectChest = Rectangle(G.Chest.Pos.x, G.Chest.Pos.y, G.Chest.Pos.x + G.Chest.Size.x, G.Chest.Pos.y + G.Chest.Size.y);
@@ -319,9 +361,10 @@ void Logic()
 
 void AssetsInit()
 {
-	// Size passé en ref et texture en param
+	// Size passé en ref et texture en param	
 	G.Heros.IdTex = G2D::InitTextureFromString(G.Heros.Size, G.Heros.texture);
 	G.Heros.Size = G.Heros.Size * 2; // on peut zoomer la taille du sprite
+	
 
 	G.Key.IdTex = G2D::InitTextureFromString(G.Key.Size, G.Key.texture);
 	G.Key.Size = G.Key.Size * 1.5; // on peut zoomer la taille du sprite
@@ -340,6 +383,7 @@ void AssetsInit()
 
 int main(int argc, char* argv[])
 {
+	cout << "IDEX"<<G.Heros.IdTex;
 	G2D::InitWindow(argc, argv, V2(G.Lpix * 15, G.Lpix * 15), V2(200, 200), string("Labyrinthe"));
 
 	AssetsInit();
