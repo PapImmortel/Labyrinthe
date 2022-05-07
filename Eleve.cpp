@@ -15,8 +15,8 @@ using namespace std;
 #define ECRAN_GAME_OVER 4
 #define ECRAN_WIN 5
 
-#define SCORE_MOMIE 10
-#define SCORE_DIAMOND 5
+#define SCORE_MOMIE 200
+#define SCORE_DIAMOND 150
 
 #define COMPTEUR_TRAP 50
 #define MIN_TRAP 70
@@ -31,10 +31,8 @@ struct Rectangle {
     V2 getCoordonneeMax() { return V2(xMax, yMax); }
 };
 
-struct _TexturePack
-{
-    string textureMur =
-        "[SGGWSSWS]"
+struct _TexturePack {
+    string textureMur = "[SGGWSSWS]"
         "[GSSSGGSW]"
         "[GSGGGGSS]"
         "[WSSGGWGG]"
@@ -42,8 +40,7 @@ struct _TexturePack
         "[SGGSWSGS]"
         "[GGWSGGGS]"
         "[GGGGSSGG]";
-    string textureSol =
-        "[LLFJLLFJ]"
+    string textureSol = "[LLFJLLFJ]"
         "[LLFJLFFJ]"
         "[LFFJLFFF]"
         "[LFJJLFFJ]"
@@ -52,12 +49,9 @@ struct _TexturePack
         "[LFFJLFFJ]"
         "[LLFJLFFJ]";
 
-
     V2 Size;
     int IdTexMur;
     int IdTexSol;
-
-
 };
 bool InterRectRect(Rectangle R1, Rectangle R2) {
     if (R1.yMax < R2.yMin) {
@@ -140,7 +134,6 @@ struct _Heros {
             Size = Size * 2; // on peut zoomer la taille du sprite
         }
     }
-    void takeDiamond() { score = score + SCORE_DIAMOND; }
 
     void reset() {
         hasKey = false;
@@ -210,8 +203,7 @@ struct _Key {
 };
 
 struct _Chest {
-    string texture =
-        "[    WWWWWWWWWWWW    ]"
+    string texture = "[    WWWWWWWWWWWW    ]"
         "[  WGWWWWWWWWWWWWWW  ]"
         "[ WGKGGWWWWWWWWWWKWW ]"
         "[WGKCKGWWKKKKWWWKCKWW]"
@@ -219,7 +211,6 @@ struct _Chest {
         "[WWRWWWWWKKKKWWWWRRWW]"
         "[ WWWRWWWWWWWWWWWWWW ]"
         "[  WWWWWWWWWWWWWWWW  ]";
-
 
     V2 Size;
     int IdTex;
@@ -231,8 +222,7 @@ struct _Chest {
     }
 };
 struct _Diamond {
-    string texture =
-        "[    GGGG    ]"
+    string texture = "[    GGGG    ]"
         "[   GWWWWG   ]"
         "[  GWCCCWCG  ]"
         "[ GWWCCWCCCG ]"
@@ -246,10 +236,6 @@ struct _Diamond {
         "[  GCCCCCCG  ]"
         "[   GGGGGG   ]";
 
-
-
-
-
     V2 Size;
     int IdTex;
     V2 Pos;
@@ -261,10 +247,8 @@ struct _Diamond {
     }
 };
 
-struct _Trap
-{
-    string activeTexture =
-        "[      WG                 WG       ]"
+struct _Trap {
+    string activeTexture = "[      WG                 WG       ]"
         "[      SG                 SG       ]"
         "[      WSG                WSG      ]"
         "[     WWSG               WWSG      ]"
@@ -296,8 +280,7 @@ struct _Trap
         "[ SGGGGGGGGGGGS      SGGGGGGGGGGGS ]"
         "[  SGGGGGGGGGS        SGGGGGGGGGS  ]";
 
-    string willBeActiveTexture =
-        "[                                  ]"
+    string willBeActiveTexture = "[                                  ]"
         "[                                  ]"
         "[                                  ]"
         "[                                  ]"
@@ -329,8 +312,7 @@ struct _Trap
         "[ SKKKSSGGKKKKS      SKKKSSGGKKKKS ]"
         "[  SKKKKKKKKKS        SKKKKKKKKKS  ]";
 
-    string inactiveTexture =
-        "[                                  ]"
+    string inactiveTexture = "[                                  ]"
         "[                                  ]"
         "[                                  ]"
         "[                                  ]"
@@ -377,19 +359,12 @@ struct _Trap
 
     void setTexture(string _texture) { texture = _texture; }
 
-    void killHeros(_Heros& heros) {
-        heros.nbVies--;
-        heros.Pos = V2(45, 45);
-        ;
-    }
-
     Rectangle getRect() {
         return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
     }
 };
 struct _Gun {
-    string texture =
-        "[   K                        ]"
+    string texture = "[   K                        ]"
         "[  KGK                    KKK]"
         "[  KGGKKKKKKKKKKKKKKKKKKKKGGK]"
         "[   KGGMMGGGGGGMMMMMMMMMMMGK ]"
@@ -507,8 +482,7 @@ struct _Bullet {
 };
 struct GameData {
 
-    string Map =
-        "MMMMMMMMMMMMMMM"
+    string Map = "MMMMMMMMMMMMMMM"
         "M M           M"
         "M M M MMM MMM M"
         "M   M       M M"
@@ -541,7 +515,8 @@ struct GameData {
 
     vector<_Momie> momies = {};
     _Diamond diamonds[5] = { _Diamond(V2(530, 367)), _Diamond(V2(48, 535)),
-                            _Diamond(V2(253, 290)),  _Diamond(V2(492, 212)),_Diamond(V2(334, 52)) };
+                            _Diamond(V2(253, 290)), _Diamond(V2(492, 212)),
+                            _Diamond(V2(334, 52)) };
     vector<_Trap> traps = {};
     void setMomies() {
         momies.clear();
@@ -611,10 +586,15 @@ void affichage_ecran_options() {
     G2D::DrawStringFontMono(V2(50, 200),
         "Appuyez sur C pour lancer le mode DIFFICILE", 16, 3,
         Color::Red);
+
+    G2D::DrawStringFontMono(
+        V2(10, 100), "Pour tirer avec le pistolet, appuyer sur la touche b", 16,
+        3, Color::Cyan);
 }
 
 void affichage_init_partie() {
     G2D::DrawStringFontMono(V2(220, 300), "Chargement...", 20, 3, Color::White);
+    G2D::DrawStringFontMono(V2(220, 100), "Appuyez sur ENTER", 16, 3, Color::Cyan);
     G2D::DrawCircle(V2(150, 250), 50, Color::Green);
     G2D::DrawCircle(V2(450, 450), 30, Color::Cyan);
     G2D::DrawCircle(V2(250, 550), 60, Color::Blue);
@@ -624,8 +604,7 @@ void affichage_init_partie() {
 void affichage_ecran_jeu() {
     // affichage des diamants
     for (_Diamond& diamond : G.diamonds) {
-        G2D::DrawRectWithTexture(diamond.IdTex, diamond.Pos,
-            diamond.Size);
+        G2D::DrawRectWithTexture(diamond.IdTex, diamond.Pos, diamond.Size);
     }
 
     for (int x = 0; x < 15; x++)
@@ -633,14 +612,13 @@ void affichage_ecran_jeu() {
             int xx = x * G.Lpix - 6;
             int yy = y * G.Lpix;
             if (G.Mur(x, y))
-                G2D::DrawRectWithTexture(G.TexturePack.IdTexMur, V2(xx, yy), G.TexturePack.Size);
-            else
-            {
-                G2D::DrawRectWithTexture(G.TexturePack.IdTexSol, V2(xx, yy), G.TexturePack.Size);
+                G2D::DrawRectWithTexture(G.TexturePack.IdTexMur, V2(xx, yy),
+                    G.TexturePack.Size);
+            else {
+                G2D::DrawRectWithTexture(G.TexturePack.IdTexSol, V2(xx, yy),
+                    G.TexturePack.Size);
             }
         }
-
-    
 
     // affichage de la clef
     if (!G.Heros.getHasKey()) {
@@ -652,11 +630,6 @@ void affichage_ecran_jeu() {
     }
     // affichage du Chest
     G2D::DrawRectWithTexture(G.Chest.IdTex, G.Chest.Pos, G.Chest.Size);
-
-    
-    if (G.Bullet.getExist()) {
-        G2D::DrawRectWithTexture(G.Bullet.IdTex, G.Bullet.Pos, G.Bullet.Size);
-    }
 
     for (_Diamond& diamond : G.diamonds) {
         if (diamond.exist) {
@@ -671,25 +644,28 @@ void affichage_ecran_jeu() {
     }
     // affichage d'une Momie
     for (_Momie& momie : G.momies) {
-        if (!momie.getMorte())
-        {
+        if (!momie.getMorte()) {
             G2D::DrawRectWithTexture(momie.IdTex, momie.Pos, momie.Size);
         }
     }
+
     // affichage du héros avec boite englobante et zoom x 2
     G2D::DrawRectangle(G.Heros.Pos, G.Heros.Size, Color::Red);
     G2D::DrawRectWithTexture(G.Heros.IdTex, G.Heros.Pos, G.Heros.Size);
 
-    G2D::DrawStringFontMono(V2(30, 580), "Partie en cours", 20, 3, Color::Green);
+    // affichage bullet
+    if (G.Bullet.getExist()) {
+        G2D::DrawRectWithTexture(G.Bullet.IdTex, G.Bullet.Pos, G.Bullet.Size);
+    }
 
     string vies = "Nombre de vies : " + std::to_string(G.Heros.nbVies);
-    G2D::DrawStringFontMono(V2(30, 20), vies, 20, 3, Color::Red);
+    G2D::DrawStringFontMono(V2(10, 10), vies, 20, 3, Color::Black);
 
     string score = "Score actuel : " + std::to_string(G.Heros.score);
-    G2D::DrawStringFontMono(V2(300, 580), score, 20, 3, Color::Yellow);
+    G2D::DrawStringFontMono(V2(150, 570), score, 25, 3, Color::Black);
 
     string balles = "Nombre de balles : " + std::to_string(G.Heros.nbBullets);
-    G2D::DrawStringFontMono(V2(300, 20), balles, 20, 3, Color::Cyan);
+    G2D::DrawStringFontMono(V2(310, 10), balles, 20, 3, Color::Black);
 }
 
 void affichage_ecran_game_over() {
@@ -745,10 +721,8 @@ bool getTapeUnMur(V2 newPos, V2 Size) {
 void collision(_Bullet& bullet) {
     Rectangle rectBullet = bullet.getRect();
     for (_Momie& momie : G.momies) {
-        if (!momie.getMorte())
-        {
-            if (InterRectRect(rectBullet, momie.getRect()))
-            {
+        if (!momie.getMorte()) {
+            if (InterRectRect(rectBullet, momie.getRect())) {
                 G.Bullet.setExist(false);
                 G.Bullet.killMomie(G.Heros, momie);
                 return;
@@ -767,26 +741,26 @@ void collision(_Bullet& bullet) {
  * Collision héros/autre
  */
 void collision(_Heros& heros) {
-    Rectangle rectHero = G.Heros.getRect();
+    Rectangle rectHero = heros.getRect();
     Rectangle rectChest = G.Chest.getRect();
     Rectangle rectKey = G.Key.getRect();
 
-    bool collisionGun = InterRectRect(G.Heros.getRect(), G.Gun.getRect());
+    bool collisionGun = InterRectRect(heros.getRect(), G.Gun.getRect());
     if (collisionGun) {
         if (!heros.hasGun) {
-            G.Heros.hasGun = true;
+            heros.hasGun = true;
         }
     }
     // ? héros/clé
     bool collisionKey = InterRectRect(rectHero, rectKey);
     if (collisionKey) {
-        G.Heros.setHasKey(true);
+        heros.setHasKey(true);
     }
 
     // ? héros/coffre
     bool collisionChest = InterRectRect(rectHero, rectChest);
     if (collisionChest) {
-        if (G.Heros.hasKey) {
+        if (heros.hasKey) {
             G.Chest.isOpened = true;
         }
     }
@@ -795,16 +769,21 @@ void collision(_Heros& heros) {
         if (trap.active == 2) {
             bool collisionTrap = InterRectRect(rectHero, trap.getRect());
             if (collisionTrap) {
-                trap.killHeros(G.Heros);
+                heros.nbVies--;
+                heros.Pos = V2(45, 45);
+                G.setMomies();
+                heros.nbBullets = 10;
             }
         }
     }
     // ? héros/diamond
-    for (_Diamond & diamond : G.diamonds) {
+    for (_Diamond& diamond : G.diamonds) {
         bool collisionDiamond = InterRectRect(rectHero, diamond.getRect());
         if (collisionDiamond) {
-            diamond.exist = false;
-            G.Heros.score += SCORE_DIAMOND;
+            if (diamond.exist) {
+                heros.score += SCORE_DIAMOND;
+                diamond.exist = false;
+            }
         }
     }
 
@@ -814,13 +793,14 @@ void collision(_Heros& heros) {
             bool collisionMomie = InterRectRect(rectHero, momie.getRect());
             if (collisionMomie) {
                 G.setMomies();
-                G.Heros.nbVies--;
-                G.Heros.Pos = V2(45, 45);
+                heros.nbVies--;
+                heros.Pos = V2(45, 45);
+                heros.nbBullets = 10;
             }
         }
     }
     // ? héros/mur
-    if (getTapeUnMur(G.Heros.Pos, G.Heros.Size)) {
+    if (getTapeUnMur(heros.Pos, heros.Size)) {
         if (G2D::IsKeyPressed(Key::LEFT))
             heros.Pos.x++;
         if (G2D::IsKeyPressed(Key::RIGHT))
@@ -841,15 +821,13 @@ bool InterMomieMur(_Momie momie, V2 newPos) {
 bool InterMomieMomie(_Momie& momie) {
     bool conditionMomie = false;
     for (_Momie m : G.momies) {
-        if (!m.getMorte())
-        {
+        if (!m.getMorte()) {
             if (!momie.isMomie(m)) {
                 if (momie.getTapeMomie(m)) {
                     conditionMomie = true;
                 }
             }
         }
-
     }
     return conditionMomie;
 }
@@ -1000,7 +978,7 @@ int gestion_ecran_jeu() {
     if (G.Chest.isOpened) {
         return 5;
     }
-    if (G.Heros.nbVies == 0) {
+    if (G.Heros.nbVies <= 0) {
         return 4;
     }
     return 3;
@@ -1042,11 +1020,12 @@ void Logic() {
 
 void AssetsInit() {
     // Size passé en ref et texture en param
-    G.TexturePack.IdTexMur = G2D::InitTextureFromString(G.TexturePack.Size, G.TexturePack.textureMur);
-    G.TexturePack.IdTexSol = G2D::InitTextureFromString(G.TexturePack.Size, G.TexturePack.textureSol);
-    G.TexturePack.Size = G.TexturePack.Size * 5; // on peut zoomer la taille du sprite
-
-
+    G.TexturePack.IdTexMur =
+        G2D::InitTextureFromString(G.TexturePack.Size, G.TexturePack.textureMur);
+    G.TexturePack.IdTexSol =
+        G2D::InitTextureFromString(G.TexturePack.Size, G.TexturePack.textureSol);
+    G.TexturePack.Size =
+        G.TexturePack.Size * 5; // on peut zoomer la taille du sprite
 
     G.Heros.IdTex = G2D::InitTextureFromString(G.Heros.Size, G.Heros.texture);
     G.Heros.Size = G.Heros.Size * 2; // on peut zoomer la taille du sprite
