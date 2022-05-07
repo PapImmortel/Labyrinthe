@@ -18,6 +18,9 @@ using namespace std;
 #define SCORE_MOMIE 10
 #define SCORE_DIAMOND 5
 
+#define COMPTEUR_TRAP 50
+#define MIN_TRAP 70
+
 struct Rectangle {
     int xMin, xMax, yMin, yMax;
     Rectangle(int _xMin, int _yMin, int _xMax, int _yMax) {
@@ -28,9 +31,9 @@ struct Rectangle {
     V2 getCoordonneeMax() { return V2(xMax, yMax); }
 };
 
-struct _TexturePack 
+struct _TexturePack
 {
-	string textureMur =
+    string textureMur =
         "[SGGWSSWS]"
         "[GSSSGGSW]"
         "[GSGGGGSS]"
@@ -49,7 +52,7 @@ struct _TexturePack
         "[LFFJLFFJ]"
         "[LLFJLFFJ]";
 
- 
+
     V2 Size;
     int IdTexMur;
     int IdTexSol;
@@ -207,7 +210,7 @@ struct _Key {
 };
 
 struct _Chest {
-    string texture = 
+    string texture =
         "[    WWWWWWWWWWWW    ]"
         "[  WGWWWWWWWWWWWWWW  ]"
         "[ WGKGGWWWWWWWWWWKWW ]"
@@ -243,7 +246,7 @@ struct _Diamond {
         "[  GCCCCCCG  ]"
         "[   GGGGGG   ]";
 
-        
+
 
 
 
@@ -258,9 +261,9 @@ struct _Diamond {
     }
 };
 
-struct _Trap 
+struct _Trap
 {
-    string textureActif =
+    string activeTexture =
         "[      WG                 WG       ]"
         "[      SG                 SG       ]"
         "[      WSG                WSG      ]"
@@ -293,7 +296,7 @@ struct _Trap
         "[ SGGGGGGGGGGGS      SGGGGGGGGGGGS ]"
         "[  SGGGGGGGGGS        SGGGGGGGGGS  ]";
 
-    string textureBientotActif =
+    string willBeActiveTexture =
         "[                                  ]"
         "[                                  ]"
         "[                                  ]"
@@ -326,7 +329,7 @@ struct _Trap
         "[ SKKKSSGGKKKKS      SKKKSSGGKKKKS ]"
         "[  SKKKKKKKKKS        SKKKKKKKKKS  ]";
 
-    string textureInActif =
+    string inactiveTexture =
         "[                                  ]"
         "[                                  ]"
         "[                                  ]"
@@ -359,17 +362,34 @@ struct _Trap
         "[ SKKKKSKKKKKKS      SKKKKSKKKKKKS ]"
         "[  SKKKKKKKKKS        SKKKKKKKKKS  ]";
 
-
+    string texture = inactiveTexture;
     V2 Size;
     int IdTex;
     V2 Pos = V2(405, 50);
-    
+    int compteur = rand() % COMPTEUR_TRAP + MIN_TRAP;
+
+    int active = 0;
+
+    _Trap(int x, int y) { Pos = V2(x, y); }
+
+    void setActive(bool _active) { active = _active; }
+    int getActive() { return active; }
+
+    void setTexture(string _texture) { texture = _texture; }
+
+    void killHeros(_Heros& heros) {
+        cout << "Vous avez été touché par une piège !" << endl;
+        heros.nbVies--;
+        heros.Pos = V2(45, 45);
+        ;
+    }
+
     Rectangle getRect() {
         return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
     }
 };
 struct _Gun {
-    string texture = 
+    string texture =
         "[   K                        ]"
         "[  KGK                    KKK]"
         "[  KGGKKKKKKKKKKKKKKKKKKKKGGK]"
@@ -391,7 +411,7 @@ struct _Gun {
 
     V2 Size;
     int IdTex;
-    V2 Pos = V2(325, 200);
+    V2 Pos = V2(45, 200);
     Rectangle getRect() {
         return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
     }
@@ -489,7 +509,7 @@ struct _Bullet {
 };
 struct GameData {
 
-    string Map = 
+    string Map =
         "MMMMMMMMMMMMMMM"
         "M M           M"
         "M M M MMM MMM M"
@@ -517,12 +537,14 @@ struct GameData {
     _Gun Gun;
     _Bullet Bullet;
     _TexturePack TexturePack;
+
     int difficulty = 0;
     int ecran = 0;
 
     vector<_Momie> momies = {};
     _Diamond diamonds[5] = { _Diamond(V2(530, 367)), _Diamond(V2(48, 535)),
                             _Diamond(V2(253, 290)),  _Diamond(V2(492, 212)),_Diamond(V2(334, 52)) };
+    vector<_Trap> traps = {};
     void setMomies() {
         momies.clear();
         if (difficulty >= 2) {
@@ -545,6 +567,26 @@ struct GameData {
             momie.IdTex = G2D::InitTextureFromString(momie.Size, momie.texture);
             momie.Size = momie.Size * 2; // on peut zoomer la taille du sprite
             momie.setMorte(false);
+        }
+    }
+    void setTrap() {
+        traps.clear();
+        if (difficulty >= 2) {
+            // ? difficile
+            traps.push_back(_Trap(363, 288));
+        }
+        if (difficulty >= 1) {
+            // ? moyen
+            traps.push_back(_Trap(202, 85));
+        }
+        if (difficulty >= 0) {
+            // ? facile
+            traps.push_back(_Trap(122, 405));
+            traps.push_back(_Trap(362, 485));
+        }
+        for (_Trap& trap : traps) {
+            trap.IdTex = G2D::InitTextureFromString(trap.Size, trap.texture);
+            trap.Size = trap.Size * 2; // on peut zoomer la taille du sprite
         }
     }
     GameData() {}
@@ -590,19 +632,17 @@ void affichage_ecran_jeu() {
 
     for (int x = 0; x < 15; x++)
         for (int y = 0; y < 15; y++) {
-            int xx = x * G.Lpix-6;
+            int xx = x * G.Lpix - 6;
             int yy = y * G.Lpix;
             if (G.Mur(x, y))
-                G2D::DrawRectWithTexture(G.TexturePack.IdTexMur,V2(xx, yy), G.TexturePack.Size);
+                G2D::DrawRectWithTexture(G.TexturePack.IdTexMur, V2(xx, yy), G.TexturePack.Size);
             else
             {
                 G2D::DrawRectWithTexture(G.TexturePack.IdTexSol, V2(xx, yy), G.TexturePack.Size);
             }
         }
 
-    // affichage du héros avec boite englobante et zoom x 2
-    G2D::DrawRectangle(G.Heros.Pos, G.Heros.Size, Color::Red);
-    G2D::DrawRectWithTexture(G.Heros.IdTex, G.Heros.Pos, G.Heros.Size);
+    
 
     // affichage de la clef
     if (!G.Heros.getHasKey()) {
@@ -615,13 +655,7 @@ void affichage_ecran_jeu() {
     // affichage du Chest
     G2D::DrawRectWithTexture(G.Chest.IdTex, G.Chest.Pos, G.Chest.Size);
 
-    // affichage d'une Momie
-    for (_Momie& momie : G.momies) {
-        if (!momie.getMorte())
-        {
-            G2D::DrawRectWithTexture(momie.IdTex, momie.Pos, momie.Size);
-        }
-    }
+    
     if (G.Bullet.getExist()) {
         G2D::DrawRectWithTexture(G.Bullet.IdTex, G.Bullet.Pos, G.Bullet.Size);
     }
@@ -631,6 +665,23 @@ void affichage_ecran_jeu() {
             G2D::DrawRectWithTexture(diamond.IdTex, diamond.Pos, diamond.Size);
         }
     }
+    // affichage des traps
+    for (_Trap& trap : G.traps) {
+        trap.IdTex = G2D::InitTextureFromString(trap.Size, trap.texture);
+        trap.Size = trap.Size * 1; // on peut zoomer la taille du sprite
+        G2D::DrawRectWithTexture(trap.IdTex, trap.Pos, trap.Size);
+    }
+    // affichage d'une Momie
+    for (_Momie& momie : G.momies) {
+        if (!momie.getMorte())
+        {
+            G2D::DrawRectWithTexture(momie.IdTex, momie.Pos, momie.Size);
+        }
+    }
+    // affichage du héros avec boite englobante et zoom x 2
+    G2D::DrawRectangle(G.Heros.Pos, G.Heros.Size, Color::Red);
+    G2D::DrawRectWithTexture(G.Heros.IdTex, G.Heros.Pos, G.Heros.Size);
+
     G2D::DrawStringFontMono(V2(30, 580), "Partie en cours", 20, 3, Color::Green);
 
     string vies = "Nombre de vies : " + std::to_string(G.Heros.nbVies);
@@ -698,7 +749,7 @@ void collision(_Bullet& bullet) {
     for (_Momie& momie : G.momies) {
         if (!momie.getMorte())
         {
-            if (InterRectRect(rectBullet, momie.getRect())) 
+            if (InterRectRect(rectBullet, momie.getRect()))
             {
                 G.Bullet.setExist(false);
                 G.Bullet.killMomie(G.Heros, momie);
@@ -746,7 +797,15 @@ void collision(_Heros& heros) {
             G.Chest.isOpened = true;
         }
     }
-
+    // ? héros / trap
+    for (_Trap& trap : G.traps) {
+        if (trap.active == 2) {
+            bool collisionTrap = InterRectRect(rectHero, trap.getRect());
+            if (collisionTrap) {
+                trap.killHeros(G.Heros);
+            }
+        }
+    }
     // ? héros/diamond
     for (int i = 0; i < 3; i++) {
         _Diamond& diamond = G.diamonds[i];
@@ -793,15 +852,15 @@ bool InterMomieMur(_Momie momie, V2 newPos) {
 bool InterMomieMomie(_Momie& momie) {
     bool conditionMomie = false;
     for (_Momie m : G.momies) {
-        if(!m.getMorte())
-        { 
+        if (!m.getMorte())
+        {
             if (!momie.isMomie(m)) {
                 if (momie.getTapeMomie(m)) {
                     conditionMomie = true;
                 }
             }
         }
-        
+
     }
     return conditionMomie;
 }
@@ -866,15 +925,17 @@ int gestion_ecran_options() {
 
 int InitPartie() {
     G.Heros.reset();
-
-    G.Key.Pos = V2(440, 450);
     G.Chest.isOpened = false;
-
     if (G2D::IsKeyPressed(Key::ENTER)) {
         G.setMomies();
         for (_Diamond& diamond : G.diamonds) {
             diamond.IdTex = G2D::InitTextureFromString(diamond.Size, diamond.texture);
             diamond.Size = diamond.Size * 1.5; // on peut zoomer la taille du sprite
+        }
+        G.setTrap();
+        for (_Trap& trap : G.traps) {
+            trap.IdTex = G2D::InitTextureFromString(trap.Size, trap.texture);
+            trap.Size = trap.Size * 2; // on peut zoomer la taille du sprite
         }
         return 3;
     }
@@ -918,7 +979,29 @@ int gestion_ecran_jeu() {
     if (G.Bullet.getExist()) {
         collision(G.Bullet);
     }
-
+    // ? traps
+    for (_Trap& trap : G.traps) {
+        // ? change la texture et le isActive si compteur == 0;
+        if (trap.compteur == 0) {
+            trap.compteur = rand() % COMPTEUR_TRAP + MIN_TRAP;
+            if (trap.active == 0) {
+                trap.compteur = MIN_TRAP;
+                trap.setTexture(trap.willBeActiveTexture);
+                trap.active = 1;
+            }
+            else if (trap.active == 1) {
+                trap.setTexture(trap.activeTexture);
+                trap.active = 2;
+            }
+            else {
+                trap.setTexture(trap.inactiveTexture);
+                trap.active = 0;
+            }
+        }
+        else {
+            trap.compteur--;
+        }
+    }
     // ? Collisions
     collision(G.Heros);
     for (_Momie& momie : G.momies) {
@@ -972,7 +1055,7 @@ void AssetsInit() {
     // Size passé en ref et texture en param
     G.TexturePack.IdTexMur = G2D::InitTextureFromString(G.TexturePack.Size, G.TexturePack.textureMur);
     G.TexturePack.IdTexSol = G2D::InitTextureFromString(G.TexturePack.Size, G.TexturePack.textureSol);
-    G.TexturePack.Size = G.TexturePack.Size*5; // on peut zoomer la taille du sprite
+    G.TexturePack.Size = G.TexturePack.Size * 5; // on peut zoomer la taille du sprite
 
 
 
