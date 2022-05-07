@@ -330,7 +330,7 @@ struct _Trap
     V2 Size;
     int IdTex;
     V2 Pos = V2(405, 50);
-    
+
     Rectangle getRect() {
         return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
     }
