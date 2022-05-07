@@ -147,7 +147,9 @@ struct _Momie {
     int IdTex;
     V2 Pos;
     V2 Dir = V2(1, 0);
-
+    bool estMorte;
+    bool getMorte() { return estMorte; }
+    void setMorte(bool _estMorte) { estMorte = _estMorte; }
     int changeCompteur = 50;
 
     _Momie(int x, int y) { Pos = V2(x, y); }
@@ -270,27 +272,27 @@ struct _Trap
         "[                                  ]"
         "[   SKKKKKKKS          SKKKKKKKS   ]"
         "[ SKKKKKKKKKKS       SKKKKKKKKKKS  ]"
-        "[SKKKKKWGKKKKKKS    SKKKKKWGKKKKKKS]"
-        "[SKKKKSSGGKKKKKS    SKKKKSSGGKKKKKS]"
-        "[ SKKKKSGKKKKKS      SKKKKSGKKKKKS ]"
+        "[SKKKKWWGGKKKKKS    SKKKKWWGGKKKKKS]"
+        "[SKKKSSSGGGKKKKS    SKKKSSSGGGKKKKS]"
+        "[ SKKKSSGGKKKKS      SKKKSSGGKKKKS ]"
         "[  SKKKKKKKKKS        SKKKKKKKKKS  ]"
         "[                                  ]"
         "[                                  ]"
         "[                                  ]"
         "[             SKKKKKKKS            ]"
         "[           SKKKKKKKKKKS           ]"
-        "[          SKKKKKWGKKKKKKS         ]"
-        "[          SKKKKSSGGKKKKKS         ]"
-        "[           SKKKKSGKKKKKS          ]"
+        "[          SKKKKWWGGKKKKKS         ]"
+        "[          SKKKSSSGGGKKKKS         ]"
+        "[           SKKKSSGGKKKKS          ]"
         "[            SKKKKKKKKKS           ]"
         "[                                  ]"
         "[                                  ]"
         "[                                  ]"
         "[   SKKKKKKKS          SKKKKKKKS   ]"
         "[ SKKKKKKKKKKS       SKKKKKKKKKKS  ]"
-        "[SKKKKKWGKKKKKKS    SKKKKKWGKKKKKKS]"
-        "[SKKKKSSGGKKKKKS    SKKKKSSGGKKKKKS]"
-        "[ SKKKKSGKKKKKS      SKKKKSGKKKKKS ]"
+        "[SKKKKWWGGKKKKKS    SKKKKWWGGKKKKKS]"
+        "[SKKKSSSGGGKKKKS    SKKKSSSGGGKKKKS]"
+        "[ SKKKSSGGKKKKS      SKKKSSGGKKKKS ]"
         "[  SKKKKKKKKKS        SKKKKKKKKKS  ]";
 
     string textureInActif =
@@ -445,7 +447,7 @@ struct _Bullet {
     }
 
     void killMomie(_Heros& heros, _Momie& momie) {
-        momie.Pos = V2(-100, -100);
+        momie.setMorte(true);
         heros.score += SCORE_MOMIE;
         cout << "Une momie a été touchée !" << endl;
     }
@@ -509,6 +511,7 @@ struct GameData {
         for (_Momie& momie : momies) {
             momie.IdTex = G2D::InitTextureFromString(momie.Size, momie.texture);
             momie.Size = momie.Size * 2; // on peut zoomer la taille du sprite
+            momie.setMorte(false);
         }
     }
     GameData() {}
@@ -577,7 +580,10 @@ void affichage_ecran_jeu() {
 
     // affichage d'une Momie
     for (_Momie& momie : G.momies) {
-        G2D::DrawRectWithTexture(momie.IdTex, momie.Pos, momie.Size);
+        if (!momie.getMorte())
+        {
+            G2D::DrawRectWithTexture(momie.IdTex, momie.Pos, momie.Size);
+        }
     }
     if (G.Bullet.getExist()) {
         G2D::DrawRectWithTexture(G.Bullet.IdTex, G.Bullet.Pos, G.Bullet.Size);
@@ -653,10 +659,14 @@ bool getTapeUnMur(V2 newPos, V2 Size) {
 void collision(_Bullet& bullet) {
     Rectangle rectBullet = bullet.getRect();
     for (_Momie& momie : G.momies) {
-        if (InterRectRect(rectBullet, momie.getRect())) {
-            G.Bullet.setExist(false);
-            G.Bullet.killMomie(G.Heros, momie);
-            return;
+        if (!momie.getMorte())
+        {
+            if (InterRectRect(rectBullet, momie.getRect())) 
+            {
+                G.Bullet.setExist(false);
+                G.Bullet.killMomie(G.Heros, momie);
+                return;
+            }
         }
     }
     V2 newPos = G.Bullet.Pos + G.Bullet.getDirectionBullet();
@@ -714,12 +724,14 @@ void collision(_Heros& heros) {
 
     // ? héros/momie
     for (_Momie& momie : G.momies) {
-        bool collisionMomie = InterRectRect(rectHero, momie.getRect());
-        if (collisionMomie) {
-            cout << "You lose !" << endl;
-            G.setMomies();
-            G.Heros.nbVies--;
-            G.Heros.Pos = V2(45, 45);
+        if (!momie.getMorte()) {
+            bool collisionMomie = InterRectRect(rectHero, momie.getRect());
+            if (collisionMomie) {
+                cout << "You lose !" << endl;
+                G.setMomies();
+                G.Heros.nbVies--;
+                G.Heros.Pos = V2(45, 45);
+            }
         }
     }
     // ? héros/mur
@@ -744,11 +756,15 @@ bool InterMomieMur(_Momie momie, V2 newPos) {
 bool InterMomieMomie(_Momie& momie) {
     bool conditionMomie = false;
     for (_Momie m : G.momies) {
-        if (!momie.isMomie(m)) {
-            if (momie.getTapeMomie(m)) {
-                conditionMomie = true;
+        if(m.getMorte())
+        { 
+            if (!momie.isMomie(m)) {
+                if (momie.getTapeMomie(m)) {
+                    conditionMomie = true;
+                }
             }
         }
+        
     }
     return conditionMomie;
 }
