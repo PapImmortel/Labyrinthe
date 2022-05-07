@@ -378,7 +378,6 @@ struct _Trap
     void setTexture(string _texture) { texture = _texture; }
 
     void killHeros(_Heros& heros) {
-        cout << "Vous avez été touché par une piège !" << endl;
         heros.nbVies--;
         heros.Pos = V2(45, 45);
         ;
@@ -501,7 +500,6 @@ struct _Bullet {
     void killMomie(_Heros& heros, _Momie& momie) {
         momie.setMorte(true);
         heros.score += SCORE_MOMIE;
-        cout << "Une momie a été touchée !" << endl;
     }
     Rectangle getRect() {
         return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
@@ -625,9 +623,9 @@ void affichage_init_partie() {
 
 void affichage_ecran_jeu() {
     // affichage des diamants
-    for (int i = 0; i < 3; i++) {
-        G2D::DrawRectWithTexture(G.diamonds[i].IdTex, G.diamonds[i].Pos,
-            G.diamonds[i].Size);
+    for (_Diamond& diamond : G.diamonds) {
+        G2D::DrawRectWithTexture(diamond.IdTex, diamond.Pos,
+            diamond.Size);
     }
 
     for (int x = 0; x < 15; x++)
@@ -776,24 +774,19 @@ void collision(_Heros& heros) {
     bool collisionGun = InterRectRect(G.Heros.getRect(), G.Gun.getRect());
     if (collisionGun) {
         if (!heros.hasGun) {
-            cout << "You got the gun" << endl;
             G.Heros.hasGun = true;
-            G.Gun.Pos = V2(-100, -100);
         }
     }
     // ? héros/clé
     bool collisionKey = InterRectRect(rectHero, rectKey);
     if (collisionKey) {
-        cout << "You got the key" << endl;
         G.Heros.setHasKey(true);
-        G.Key.Pos = V2(-100, -100);
     }
 
     // ? héros/coffre
     bool collisionChest = InterRectRect(rectHero, rectChest);
     if (collisionChest) {
         if (G.Heros.hasKey) {
-            cout << "You win !" << endl;
             G.Chest.isOpened = true;
         }
     }
@@ -807,12 +800,9 @@ void collision(_Heros& heros) {
         }
     }
     // ? héros/diamond
-    for (int i = 0; i < 3; i++) {
-        _Diamond& diamond = G.diamonds[i];
+    for (_Diamond & diamond : G.diamonds) {
         bool collisionDiamond = InterRectRect(rectHero, diamond.getRect());
         if (collisionDiamond) {
-            cout << "You got the diamond" << endl;
-            diamond.Pos = V2(-100, -100);
             diamond.exist = false;
             G.Heros.score += SCORE_DIAMOND;
         }
@@ -823,7 +813,6 @@ void collision(_Heros& heros) {
         if (!momie.getMorte()) {
             bool collisionMomie = InterRectRect(rectHero, momie.getRect());
             if (collisionMomie) {
-                cout << "You lose !" << endl;
                 G.setMomies();
                 G.Heros.nbVies--;
                 G.Heros.Pos = V2(45, 45);
@@ -869,7 +858,6 @@ void collision(_Momie& momie) {
     V2 newPos = momie.Pos + momie.Dir;
 
     if (InterMomieMomie(momie)) {
-        std::cout << "collision momie" << std::endl;
         momie.Dir = -momie.Dir;
         momie.Pos = momie.Pos + momie.Dir;
         momie.changeCompteur = 50;
@@ -931,6 +919,7 @@ int InitPartie() {
         for (_Diamond& diamond : G.diamonds) {
             diamond.IdTex = G2D::InitTextureFromString(diamond.Size, diamond.texture);
             diamond.Size = diamond.Size * 1.5; // on peut zoomer la taille du sprite
+            diamond.exist = true;
         }
         G.setTrap();
         for (_Trap& trap : G.traps) {
