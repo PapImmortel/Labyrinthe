@@ -16,6 +16,8 @@ using namespace std;
 #define ECRAN_JEU 3
 #define ECRAN_GAME_OVER 4
 #define ECRAN_WIN 5
+#define SCORE_MOMIE 10
+#define SCORE_DIAMOND 5
 
 struct Rectangle
 {
@@ -62,7 +64,8 @@ struct _Heros
 	V2 Pos = V2(45, 45);
 	bool hasKey = false;
 	bool hasGun = false;
-	int nbBalles = 0;
+	int score = 0;
+	int nbBullets = 10;
 	int nbVies = 3;
 	bool typeTexture = false;
 	int numTexture = 10;
@@ -77,6 +80,14 @@ struct _Heros
 	void setHasGun() { hasGun = true; }
 	Rectangle getRect() {
 		return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
+	}
+	void reset() {
+		hasKey = false;
+		hasGun = false;
+		nbBullets = 10;
+		score = 0;
+		setNbVies(3);
+		Pos = V2(45, 45);
 	}
 	void changeTexture() 
 	{ 
@@ -214,17 +225,37 @@ struct _Bullet
 	void setExist(bool _exist) { exist = _exist; }
 	bool getExist() { return exist; }
 	void setTexture(string _texture) { texture = _texture; }
-	V2 directionBullet() 
+	void setLastDirectionTexture(_Heros& heros) {
+		if (heros.getLastDirection() == 0) {
+			setTexture(textureSouth);
+		}
+		else if (heros.getLastDirection() == 1) {
+			setTexture(textureNorth);
+		}
+		else if (heros.getLastDirection() == 2) {
+			setTexture(textureEast);
+		}
+		else if (heros.getLastDirection() == 3) {
+			setTexture(textureWeast);
+		}
+	}
+	V2 getDirectionBullet() 
 	{
 		if (texture == textureSouth) return V2(0, -1);
 		if (texture == textureNorth) return V2(0, 1);
 		if (texture == textureEast)  return V2(1, 0);
 		if (texture == textureWeast) return V2(-1, 0);
 	}
+	void killMomie(_Heros& heros, _Momie& momie)
+	{
+		momie.Pos = V2(-100, -100);
+		heros.score += SCORE_MOMIE;
+	}
 	Rectangle getRect()
 	{
 		return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
 	}
+
 };
 struct _Chest
 {
@@ -305,8 +336,6 @@ struct GameData
 	int Lpix = 40;  // largeur en pixels des cases du labyrinthe
 
 	_Heros Heros;   // data du héros
-
-
 	_Key   Key;
 	_Gun   Gun;
 	_Bullet Bullet;
@@ -320,6 +349,31 @@ struct GameData
 
 
 GameData G;
+
+void setMomies() {
+	G.momies.clear();
+	if (G.difficulty >= 2) {
+		// ? difficile
+		G.momies.push_back(_Momie(V2(529, 380)));
+		G.momies.push_back(_Momie(V2(485, 205)));
+	}
+	if (G.difficulty >= 1) {
+		// ? moyen
+		G.momies.push_back(_Momie(V2(43, 525)));
+		G.momies.push_back(_Momie(V2(316, 45)));
+	}
+	if (G.difficulty >= 0) {
+		// ? facile
+		G.momies.push_back(_Momie(V2(250, 250)));
+		G.momies.push_back(_Momie(V2(130, 420)));
+		G.momies.push_back(_Momie(V2(370, 470)));
+	}
+	for (_Momie& momie : G.momies) {
+		momie.IdTex = G2D::InitTextureFromString(momie.Size, momie.texture);
+		momie.Size = momie.Size * 2; // on peut zoomer la taille du sprite
+	}
+}
+
 
 bool InterRectRect(Rectangle R1, Rectangle R2)
 {
@@ -378,12 +432,12 @@ void affichage_ecran_jeu()
 
 	
 	// affichage de la clef
-	if (G.Heros.getHasKey() == false)
+	if (!G.Heros.getHasKey())
 	{
 		G2D::DrawRectWithTexture(G.Key.IdTex, G.Key.Pos, G.Key.Size);
 	}
 
-	if (G.Heros.getHasGun() == false)
+	if (!G.Heros.getHasGun())
 	{
 		G2D::DrawRectWithTexture(G.Gun.IdTex, G.Gun.Pos, G.Gun.Size);
 	}
@@ -397,28 +451,40 @@ void affichage_ecran_jeu()
 		G2D::DrawRectWithTexture(momie.IdTex, momie.Pos, momie.Size);
 
 	}
-	G2D::DrawStringFontMono(V2(100, 580), "Partie en cours", 20, 3, Color::Green);
-	// affichage bullet
 	if (G.Bullet.getExist())
 	{
 		G2D::DrawRectWithTexture(G.Bullet.IdTex, G.Bullet.Pos, G.Bullet.Size);
 	}
 
+	G2D::DrawStringFontMono(V2(30, 580), "Partie en cours", 20, 3, Color::Green);
+	// affichage bullet
+	
+
 	string vies = "Nombre de vies : " + std::to_string(G.Heros.getNbVies());
-	G2D::DrawStringFontMono(V2(100, 20), vies, 20, 3, Color::Green);
+	G2D::DrawStringFontMono(V2(30, 20), vies, 20, 3, Color::Red);
+
+	string score = "Score actuel : " + std::to_string(G.Heros.score);
+	G2D::DrawStringFontMono(V2(300, 580), score, 20, 3, Color::Yellow);
+
+	string balles = "Nombre de balles : " + std::to_string(G.Heros.nbBullets);
+	G2D::DrawStringFontMono(V2(300, 20), balles, 20, 3, Color::Cyan);
 
 }
 
 void affichage_ecran_game_over() {
 	G2D::DrawStringFontMono(V2(70, 500), "Game over", 80, 10, Color::Red);
-	G2D::DrawStringFontMono(V2(50, 300),
-		"Appuyez sur ENTER pour faire une autre partie.", 16,
-		3, Color::Green);
+
+	string score = "Score : " + std::to_string(G.Heros.score);
+	G2D::DrawStringFontMono(V2(70, 300), score, 20, 3, Color::Yellow);
+
+	G2D::DrawStringFontMono(V2(50, 200),"Appuyez sur ENTER pour faire une autre partie.", 16,3, Color::Green);
 }
 
 void affichage_ecran_win() {
 	G2D::DrawStringFontMono(V2(70, 500), "You WIN !!!!", 80, 10, Color::Green);
-	G2D::DrawStringFontMono(V2(50, 300),"Appuyez sur ENTER pour faire une autre partie.", 16,3, Color::White);
+	G2D::DrawStringFontMono(V2(50, 200),"Appuyez sur ENTER pour faire une autre partie.", 16,3, Color::White);
+	string score = "Score : " + std::to_string(G.Heros.score);
+	G2D::DrawStringFontMono(V2(70, 300), score, 20, 3, Color::Yellow);
 }
 
 void render() {
@@ -476,6 +542,7 @@ void collision(Rectangle rectMomie)
 {
 	if (InterRectRect(G.Heros.getRect(), rectMomie))
 	{
+		setMomies();
 		G.Heros.Pos = V2(45, 45);
 		G.Heros.setNbVies(G.Heros.getNbVies()-1);
 	}
@@ -503,12 +570,12 @@ void collisionBullet()
 		{
 			G.Bullet.setExist(false);
 			
-			cout << "Detruire Momie";
+			G.Bullet.killMomie(G.Heros, momie);
 			return;
 		}
 
 	}
-	V2 newBulletPos = G.Bullet.Pos + G.Bullet.directionBullet();
+	V2 newBulletPos = G.Bullet.Pos + G.Bullet.getDirectionBullet();
 	if (!((G.Mur(newBulletPos.x / 40, newBulletPos.y / 40)) || (G.Mur((newBulletPos.x + G.Bullet.Size.x) / 40, (newBulletPos.y + G.Bullet.Size.y) / 40)) || (G.Mur((newBulletPos.x) / 40, (newBulletPos.y + G.Bullet.Size.y) / 40)) || (G.Mur((newBulletPos.x + G.Bullet.Size.x) / 40, (newBulletPos.y) / 40))))
 	{
 		G.Bullet.Pos = newBulletPos;
@@ -628,38 +695,13 @@ int gestion_ecran_options() {
 }
 
 int InitPartie() {
-	G.Heros.hasKey = false;
-	G.Heros.setNbVies(3);
-	G.Heros.hasGun = false;
-	G.Heros.nbBalles = 0;
-	G.Heros.Pos = V2(45, 45);
+	G.Heros.reset();
 
 	G.Key.Pos = V2(440, 450);
 	G.Chest.isOpened = false;
 
-	// G.momies.clear();
 	if (G2D::IsKeyPressed(Key::ENTER)) {
-		G.momies.clear();
-		if (G.difficulty >= 2) {
-			// ? difficile
-			G.momies.push_back(_Momie(V2(529, 380)));
-			G.momies.push_back(_Momie(V2(485, 205)));
-		}
-		if (G.difficulty >= 1) {
-			// ? moyen
-			G.momies.push_back(_Momie(V2(43, 525)));
-			G.momies.push_back(_Momie(V2(316, 45)));
-		}
-		if (G.difficulty >= 0) {
-			// ? facile
-			G.momies.push_back(_Momie(V2(250, 250)));
-			G.momies.push_back(_Momie(V2(130, 420)));
-			G.momies.push_back(_Momie(V2(370, 470)));
-		}
-		for (_Momie& momie : G.momies) {
-			momie.IdTex = G2D::InitTextureFromString(momie.Size, momie.texture);
-			momie.Size = momie.Size * 2; // on peut zoomer la taille du sprite
-		}
+		setMomies();
 		return 3;
 	}
 	return 2;
@@ -691,40 +733,43 @@ int gestion_ecran_jeu()
 {
 	if (G2D::IsKeyPressed(Key::LEFT)) { G.Heros.Pos.x--;	G.Heros.changeTexture(); G.Heros.setLastDirection(3); }
 
-	if (G2D::IsKeyPressed(Key::RIGHT)) { G.Heros.Pos.x++; G.Heros.changeTexture(); G.Heros.setLastDirection(2);}
-	if (G2D::IsKeyPressed(Key::UP))    {G.Heros.Pos.y++; G.Heros.changeTexture(); G.Heros.setLastDirection(1);}
-	if (G2D::IsKeyPressed(Key::DOWN)) { G.Heros.Pos.y--; G.Heros.changeTexture(); G.Heros.setLastDirection(0);}
+	if (G2D::IsKeyPressed(Key::RIGHT)) { G.Heros.Pos.x++; G.Heros.changeTexture(); G.Heros.setLastDirection(2); }
+	if (G2D::IsKeyPressed(Key::UP)) { G.Heros.Pos.y++; G.Heros.changeTexture(); G.Heros.setLastDirection(1); }
+	if (G2D::IsKeyPressed(Key::DOWN)) { G.Heros.Pos.y--; G.Heros.changeTexture(); G.Heros.setLastDirection(0); }
 	if (G2D::IsKeyPressed(Key::B))
 	{
-		if (G.Heros.getHasGun() && (G.Bullet.getExist()==false))
-		{
-			G.Bullet.setExist(true);
-			G.Bullet.Pos = G.Heros.Pos;
-			sensBullet(G.Bullet);
-			//Bullet affichage test
-			G.Bullet.IdTex = G2D::InitTextureFromString(G.Bullet.Size, G.Bullet.texture);
-			G.Bullet.Size = G.Bullet.Size * 0.8; // on peut zoomer la taille du sprite
+		if (G.Heros.hasGun && G.Heros.nbBullets > 0 && (G.Bullet.getExist() == false)) {
+			{
+				G.Bullet.setExist(true);
+				G.Bullet.Pos = G.Heros.Pos;
+				sensBullet(G.Bullet);
+				//Bullet affichage test
+				G.Bullet.IdTex = G2D::InitTextureFromString(G.Bullet.Size, G.Bullet.texture);
+				G.Bullet.Size = G.Bullet.Size * 0.8; // on peut zoomer la taille du sprite
+				G.Heros.nbBullets--;
+			}
 		}
-	}
-	if (G.Bullet.getExist())
-	{
-		collisionBullet();
-	}
-	collision(G.Heros);
-	for (_Momie& momie : G.momies)
-	{
-		DeplacementMomies(momie);
-	}
-	if (G.Chest.isOpened) {
-		return 5;
-	}
-	if (G.Heros.getNbVies() == 0) {
-		return 4;
-	}
-	return 3;
-}
+		if (G.Bullet.getExist())
+		{
+			collisionBullet();
+		}
+		collision(G.Heros);
+		for (_Momie& momie : G.momies)
+		{
+			DeplacementMomies(momie);
+		}
+		if (G.Chest.isOpened) {
+			return 5;
+		}
+		if (G.Heros.getNbVies() == 0) {
+			return 4;
+		}
+		return 3;
+	};
+};
 
-void Logic() {
+void Logic()
+{
 	if (G.ecran == ECRAN_ACCUEIL) {
 		G.ecran = gestion_ecran_accueil();
 	}
@@ -745,7 +790,7 @@ void Logic() {
 	if (G.ecran == ECRAN_WIN) {
 		G.ecran = gestion_ecran_win();
 	}
-}
+};
 
 void AssetsInit()
 {
