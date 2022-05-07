@@ -180,12 +180,15 @@ struct _Key {
 
 struct _Chest {
     string texture = 
-        "[   WWWWWWWWWWWWWW   ]"
-        "[ WGGGGWWWWWWWWWWWWW ]"
-        "[WG   GWW    WWW   WW]"
+        "[    WWWWWWWWWWWW    ]"
+        "[  WGWWWWWWWWWWWWWW  ]"
+        "[ WGKGGWWWWWWWWWWKWW ]"
+        "[WGKCKGWW    WWWKCKWW]"
         "[WGRRGGW  YY  WWWRRWW]"
-        "[WWRRWWWW    WWWWRRWW]"
-        "[ WWWWWWWWWWWWWWWWWW ]";
+        "[WWRWWWWW    WWWWRRWW]"
+        "[ WWWRWWWWWWWWWWWWWW ]"
+        "[  WWWWWWWWWWWWWWWW  ]";
+
 
     V2 Size;
     int IdTex;
