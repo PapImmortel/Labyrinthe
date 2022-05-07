@@ -203,7 +203,8 @@ struct _Key {
 };
 
 struct _Chest {
-    string texture = "[    WWWWWWWWWWWW    ]"
+    string texture = 
+        "[    WWWWWWWWWWWW    ]"
         "[  WGWWWWWWWWWWWWWW  ]"
         "[ WGKGGWWWWWWWWWWKWW ]"
         "[WGKCKGWWKKKKWWWKCKWW]"
@@ -393,48 +394,48 @@ struct _Gun {
 
 struct _Bullet {
     string textureNorth = "[  GG  ]"
-        "[ GYYG ]"
-        "[ GYYG ]"
-        "[ GYYG ]"
-        "[ GYYG ]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[ GYYG ]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[GGGGGG]";
-    string textureSouth = "[GGGGGG]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[ GYYG ]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[GYYYYG]"
-        "[ GYYG ]"
-        "[ GYYG ]"
-        "[ GYYG ]"
-        "[ GYYG ]"
-        "[  GG  ]";
+        "[ KYYK ]"
+        "[ KYYK ]"
+        "[ KYYK ]"
+        "[ KYYK ]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[ KYYK ]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KKKKKK]";
+    string textureSouth = "[KKKKKK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[ KYYK ]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[ KYYK ]"
+        "[ KYYK ]"
+        "[ KYYK ]"
+        "[ KYYK ]"
+        "[  KK  ]";
 
-    string textureEast = "[GG GGGGGGG     ]"
-        "[GYGYYYYYYYGGGG ]"
-        "[GYYYYYYYYYYYYYG]"
-        "[GYYYYYYYYYYYYYG]"
-        "[GYGYYYYYYYGGGG ]"
-        "[GG GGGGGGG     ]";
-    string textureWeast = "[     GGGGGGG GG]"
-        "[ GGGGYYYYYYYGYG]"
-        "[GYYYYYYYYYYYYYG]"
-        "[GYYYYYYYYYYYYYG]"
-        "[ GGGGYYYYYYYGYG]"
-        "[     GGGGGGG GG]";
+    string textureEast = "[KK KKKKKKK     ]"
+        "[KYKYYYYYYYKKKK ]"
+        "[KYYYYYYYYYYYYYK]"
+        "[KYYYYYYYYYYYYYK]"
+        "[KYKYYYYYYYKKKK ]"
+        "[KK KKKKKKK     ]";
+    string textureWeast = "[     KKKKKKK KK]"
+        "[ KKKKYYYYYYYKYK]"
+        "[KYYYYYYYYYYYYYK]"
+        "[KYYYYYYYYYYYYYK]"
+        "[ KKKKYYYYYYYKYK]"
+        "[     KKKKKKK KK]";
     V2 Size;
     int IdTex;
     V2 Pos;
@@ -482,7 +483,8 @@ struct _Bullet {
 };
 struct GameData {
 
-    string Map = "MMMMMMMMMMMMMMM"
+    string Map =
+        "MMMMMMMMMMMMMMM"
         "M M           M"
         "M M M MMM MMM M"
         "M   M       M M"
