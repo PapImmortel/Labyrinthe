@@ -39,6 +39,5 @@ V2 operator-(const V2 &a); // - unaire
 // produit scalaire
 float prodScal(const V2 &a, const V2 &b);
 float prodVect(const V2 &a, const V2 &b);
-
 // affichage
 std::ostream &operator<<(std::ostream &os, V2 &t);

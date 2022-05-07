@@ -23,7 +23,6 @@ V2 operator-(const V2 &a) { return V2(-a.x, -a.y); }
 
 float prodScal(const V2 &a, const V2 &b) { return a.x * b.x + a.y * b.y; }
 float prodVect(const V2 &a, const V2 &b) { return a.x * b.y - a.y * b.x; }
-
 // affichage
 
 std::ostream &operator<<(std::ostream &os, V2 &t) {

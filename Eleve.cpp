@@ -28,6 +28,34 @@ struct Rectangle {
     V2 getCoordonneeMax() { return V2(xMax, yMax); }
 };
 
+struct _TexturePack 
+{
+	string textureMur =
+        "[SGGWSSWS]"
+        "[GSSSGGSW]"
+        "[GSGGGGSS]"
+        "[WSSGGWGG]"
+        "[GSGWGGGG]"
+        "[SGGSWSGS]"
+        "[GGWSGGGS]"
+        "[GGGGSSGG]";
+    string textureSol =
+        "[LLFJLLFJ]"
+        "[LLFJLFFJ]"
+        "[LFFJLFFF]"
+        "[LFJJLFFJ]"
+        "[FFJJLFJJ]"
+        "[LFJJLFJJ]"
+        "[LFFJLFFJ]"
+        "[LLFJLFFJ]";
+
+ 
+    V2 Size;
+    int IdTexMur;
+    int IdTexSol;
+
+
+};
 bool InterRectRect(Rectangle R1, Rectangle R2) {
     if (R1.yMax < R2.yMin) {
         return false;
@@ -183,9 +211,9 @@ struct _Chest {
         "[    WWWWWWWWWWWW    ]"
         "[  WGWWWWWWWWWWWWWW  ]"
         "[ WGKGGWWWWWWWWWWKWW ]"
-        "[WGKCKGWW    WWWKCKWW]"
-        "[WGRRGGW  YY  WWWRRWW]"
-        "[WWRWWWWW    WWWWRRWW]"
+        "[WGKCKGWWKKKKWWWKCKWW]"
+        "[WGRRGGWKKYYKKWWWRRWW]"
+        "[WWRWWWWWKKKKWWWWRRWW]"
         "[ WWWRWWWWWWWWWWWWWW ]"
         "[  WWWWWWWWWWWWWWWW  ]";
 
@@ -341,24 +369,25 @@ struct _Trap
     }
 };
 struct _Gun {
-    string texture = "[   O                        ]"
-        "[  OGO                    OGO]"
-        "[  OGGOOOOOOOOOOOOOOOOOOOOGGO]"
-        "[   OGGMMGGGGGGMMMMMMMMMMMGO ]"
-        "[    OMMSSGGGGSSGGGGGGGGGGGOO]"
-        "[    OMSSSSSSSSOWWOWWOWWOGGOO]"
-        "[    OMSSSSSSSOWWOWWOWWOWWGOO]"
-        "[  OOMMSSWWSOOOOOOMMMMMMMMMO ]"
-        "[ OMMMSSWWWOO   O OMOMOMOMO  ]"
-        "[OMSSSSWWWWO O  O  O O O O   ]"
-        "[OMOOOSWWWWO    O            ]"
-        "[OO  OWWWWWOOOOO             ]"
-        "[    OWWWWWO                 ]"
-        "[    OWWWWWO                 ]"
-        "[    OWWWWWO                 ]"
-        "[    OWWYWWO                 ]"
-        "[    OWWWWWO                 ]"
-        "[     OOOOO                  ]";
+    string texture = 
+        "[   K                        ]"
+        "[  KGK                    KKK]"
+        "[  KGGKKKKKKKKKKKKKKKKKKKKGGK]"
+        "[   KGGMMGGGGGGMMMMMMMMMMMGK ]"
+        "[    KMMSSGGGGSSGGGGGGGGGGGKK]"
+        "[    KMSSSSSSSSKWWKWWKWWKGGKK]"
+        "[    KMSSSSSSSKWWKWWKWWKWWGKK]"
+        "[  KKMMSSWWSKKKKKKMMMMMMMMMK ]"
+        "[ KMMMSSWWWKK   K KMKMKMKMK  ]"
+        "[KMSSSSWWWWK K  K  K K K K   ]"
+        "[KMKKKSWWWWK    K            ]"
+        "[KK  KWWWWWKKKKK             ]"
+        "[    KWWWWWK                 ]"
+        "[    KWWWWWK                 ]"
+        "[    KWWWWWK                 ]"
+        "[    KWWYWWK                 ]"
+        "[    KWWWWWK                 ]"
+        "[     KKKKK                  ]";
 
     V2 Size;
     int IdTex;
@@ -460,7 +489,8 @@ struct _Bullet {
 };
 struct GameData {
 
-    string Map = "MMMMMMMMMMMMMMM"
+    string Map = 
+        "MMMMMMMMMMMMMMM"
         "M M           M"
         "M M M MMM MMM M"
         "M   M       M M"
@@ -486,7 +516,7 @@ struct GameData {
     _Chest Chest;
     _Gun Gun;
     _Bullet Bullet;
-
+    _TexturePack TexturePack;
     int difficulty = 0;
     int ecran = 0;
 
@@ -560,10 +590,14 @@ void affichage_ecran_jeu() {
 
     for (int x = 0; x < 15; x++)
         for (int y = 0; y < 15; y++) {
-            int xx = x * G.Lpix;
+            int xx = x * G.Lpix-6;
             int yy = y * G.Lpix;
             if (G.Mur(x, y))
-                G2D::DrawRectangle(V2(xx, yy), V2(G.Lpix, G.Lpix), Color::Blue, true);
+                G2D::DrawRectWithTexture(G.TexturePack.IdTexMur,V2(xx, yy), G.TexturePack.Size);
+            else
+            {
+                G2D::DrawRectWithTexture(G.TexturePack.IdTexSol, V2(xx, yy), G.TexturePack.Size);
+            }
         }
 
     // affichage du héros avec boite englobante et zoom x 2
@@ -759,7 +793,7 @@ bool InterMomieMur(_Momie momie, V2 newPos) {
 bool InterMomieMomie(_Momie& momie) {
     bool conditionMomie = false;
     for (_Momie m : G.momies) {
-        if(m.getMorte())
+        if(!m.getMorte())
         { 
             if (!momie.isMomie(m)) {
                 if (momie.getTapeMomie(m)) {
@@ -936,6 +970,12 @@ void Logic() {
 
 void AssetsInit() {
     // Size passé en ref et texture en param
+    G.TexturePack.IdTexMur = G2D::InitTextureFromString(G.TexturePack.Size, G.TexturePack.textureMur);
+    G.TexturePack.IdTexSol = G2D::InitTextureFromString(G.TexturePack.Size, G.TexturePack.textureSol);
+    G.TexturePack.Size = G.TexturePack.Size*5; // on peut zoomer la taille du sprite
+
+
+
     G.Heros.IdTex = G2D::InitTextureFromString(G.Heros.Size, G.Heros.texture);
     G.Heros.Size = G.Heros.Size * 2; // on peut zoomer la taille du sprite
 
@@ -946,7 +986,7 @@ void AssetsInit() {
     G.Chest.Size = G.Chest.Size * 2.5; // on peut zoomer la taille du sprite
 
     G.Gun.IdTex = G2D::InitTextureFromString(G.Gun.Size, G.Gun.texture);
-    G.Gun.Size = G.Gun.Size * 0.8; // on peut zoomer la taille du sprite
+    G.Gun.Size = G.Gun.Size * 1; // on peut zoomer la taille du sprite
 }
 int main(int argc, char* argv[]) {
     G2D::InitWindow(argc, argv, V2(G.Lpix * 15, G.Lpix * 15), V2(200, 200),

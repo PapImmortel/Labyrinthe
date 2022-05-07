@@ -235,6 +235,9 @@ void InitColors()
 	AssignColor('C', 0, 255, 255); // cyan
 	AssignColor('Y', 255, 255, 0); // yellow
 	AssignColor('S', 192, 192, 192); // silver
+	AssignColor('L', 204, 102, 0); // light brown
+	AssignColor('F', 153, 76, 0); // brown
+	AssignColor('J', 102,51, 0); // dark brown
 	AssignColor('G', 128, 128, 128); // gray
 	AssignColor('O', 255, 215, 0); // or
 	AssignColor(' ', 255, 255, 255, 0); // transparent
