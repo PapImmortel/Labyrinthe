@@ -147,7 +147,48 @@ struct _Heros {
         return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
     }
 };
+struct _Life {
+    string vivantTexture =
+        "[   KKK    KKK   ]"
+        "[  KRRRK  KRRRK  ]"
+        "[ KRMRMRKKRRRRRK ]"
+        "[KRMWRRRRRRRRRRRK]"
+        "[KRWRRRRRRRRRRRRK]"
+        "[KRMRRRRRRRRRRRRK]"
+        "[KRRRRRRRRRRRRRRK]"
+        "[ KRRRRRRRRRRRRK ]"
+        "[ KRRRRRRRRRRRRK ]"
+        "[  KRRRRRRRRRRK  ]"
+        "[   KRRRRRRRRK   ]"
+        "[    KRRRRRRK    ]"
+        "[     KRRRRK     ]"
+        "[      KRRK      ]"
+        "[       KK       ]";
 
+        string mortTexture =
+        "[   KKK    KKK   ]"
+        "[  KKKKK  KKKKK  ]"
+        "[ KKKKKKKKKKKKKK ]"
+        "[KKKWKKKKKKKKKKKK]"
+        "[KKWKKKKKKKKKKKKK]"
+        "[KKKKKKKKKKKKKKKK]"
+        "[KKKKKKKKKKKKKKKK]"
+        "[ KKKKKKKKKKKKKK ]"
+        "[ KKKKKKKKKKKKKK ]"
+        "[  KKKKKKKKKKKK  ]"
+        "[   KKKKKKKKKK   ]"
+        "[    KKKKKKKK    ]"
+        "[     KKKKKK     ]"
+        "[      KKKK      ]"
+        "[       KK       ]";
+    V2 Size;
+    V2 Pos;
+    int IdTex;
+    bool exist;
+    string texture;
+    _Life(V2 _Pos) { Pos = _Pos; }
+    void setTexture(string _Texture) { texture = _Texture; }
+};
 struct _Momie {
     string texture = "[    O    ]"
         "[  BBOBB  ]"
@@ -394,6 +435,30 @@ struct _Gun {
         return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
     }
 };
+struct _Chargeur 
+{
+    string texture =
+        "[  GG  ]"
+        "[ KYYK ]"
+        "[ KYYK ]"
+        "[ KYYK ]"
+        "[ KYYK ]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[ KYYK ]"
+        "[KYYYYK]"
+        "[KYYYYK]"
+        "[KKKKKK]";
+    V2 Size;
+    V2 Pos;
+    int IdTex;
+    bool exist;
+    _Chargeur(V2 _Pos) { Pos = _Pos; }
+};
 
 struct _Bullet {
     string textureNorth = "[  GG  ]"
@@ -522,6 +587,9 @@ struct GameData {
     _Diamond diamonds[5] = { _Diamond(V2(530, 367)), _Diamond(V2(48, 535)),
                             _Diamond(V2(253, 290)), _Diamond(V2(492, 212)),
                             _Diamond(V2(334, 52)) };
+    _Life lifes[3] = { _Life(V2(255,8)),_Life(V2(235,8)), _Life(V2(215,8)) };
+    _Chargeur chargeurs[10] = { _Chargeur(V2(580,20)),_Chargeur(V2(580,5)), _Chargeur(V2(570,20)),_Chargeur(V2(570,5)),_Chargeur(V2(560,20)),_Chargeur(V2(560,5)),_Chargeur(V2(550,20)),_Chargeur(V2(550,5)),_Chargeur(V2(540,20)),_Chargeur(V2(540,5)) };
+
     vector<_Trap> traps = {};
     void setMomies() {
         momies.clear();
@@ -607,11 +675,6 @@ void affichage_init_partie() {
 }
 
 void affichage_ecran_jeu() {
-    // affichage des diamants
-    for (_Diamond& diamond : G.diamonds) {
-        G2D::DrawRectWithTexture(diamond.IdTex, diamond.Pos, diamond.Size);
-    }
-
     for (int x = 0; x < 15; x++)
         for (int y = 0; y < 15; y++) {
             int xx = x * G.Lpix - 6;
@@ -636,9 +699,19 @@ void affichage_ecran_jeu() {
     // affichage du Chest
     G2D::DrawRectWithTexture(G.Chest.IdTex, G.Chest.Pos, G.Chest.Size);
 
+    // affichage des diamants
     for (_Diamond& diamond : G.diamonds) {
         if (diamond.exist) {
             G2D::DrawRectWithTexture(diamond.IdTex, diamond.Pos, diamond.Size);
+        }
+    }
+    for (_Life& life : G.lifes) {
+        G2D::DrawRectWithTexture(life.IdTex, life.Pos, life.Size);
+    }
+    for (_Chargeur& chargeur : G.chargeurs) {
+        if (chargeur.exist)
+        {
+            G2D::DrawRectWithTexture(chargeur.IdTex, chargeur.Pos, chargeur.Size);
         }
     }
     // affichage des traps
@@ -663,14 +736,14 @@ void affichage_ecran_jeu() {
         G2D::DrawRectWithTexture(G.Bullet.IdTex, G.Bullet.Pos, G.Bullet.Size);
     }
 
-    string vies = "Nombre de vies : " + std::to_string(G.Heros.nbVies);
-    G2D::DrawStringFontMono(V2(10, 10), vies, 20, 3, Color::Black);
+    string vies = "Nombre de vies : ";
+    G2D::DrawStringFontMono(V2(10, 12), vies, 18, 3, Color::Black);
 
-    string score = "Score actuel : " + std::to_string(G.Heros.score);
+    string score = "Score actuel :" + std::to_string(G.Heros.score);
     G2D::DrawStringFontMono(V2(150, 570), score, 25, 3, Color::Black);
 
-    string balles = "Nombre de balles : " + std::to_string(G.Heros.nbBullets);
-    G2D::DrawStringFontMono(V2(310, 10), balles, 20, 3, Color::Black);
+    string balles = "Nombre de balles :" ;
+    G2D::DrawStringFontMono(V2(300, 12), balles, 18, 3, Color::Black);
 }
 
 void affichage_ecran_game_over() {
@@ -778,6 +851,20 @@ void collision(_Heros& heros) {
                 heros.Pos = V2(45, 45);
                 G.setMomies();
                 heros.nbBullets = 10;
+                for (_Life& life : G.lifes)
+                {
+                    if (life.exist)
+                    {
+                        life.exist = false;
+                        life.setTexture(life.mortTexture);
+                        life.IdTex = G2D::InitTextureFromString(life.Size, life.texture);
+                        life.Size = life.Size * 1.5; // on peut zoomer la taille du sprite
+                        break;
+                    }
+                }
+                for (_Chargeur& chargeur : G.chargeurs) {
+                    chargeur.exist = true;
+                }
             }
         }
     }
@@ -801,6 +888,20 @@ void collision(_Heros& heros) {
                 heros.nbVies--;
                 heros.Pos = V2(45, 45);
                 heros.nbBullets = 10;
+                for (_Life& life : G.lifes)
+                {
+                    if (life.exist)
+                    {
+                        life.exist = false;
+                        life.setTexture(life.mortTexture);
+                        life.IdTex = G2D::InitTextureFromString(life.Size, life.texture);
+                        life.Size = life.Size * 1.5; // on peut zoomer la taille du sprite
+                        break;
+                    }
+                }
+                for (_Chargeur& chargeur : G.chargeurs) {
+                    chargeur.exist = true;
+                }
             }
         }
     }
@@ -904,6 +1005,16 @@ int InitPartie() {
             diamond.Size = diamond.Size * 1.5; // on peut zoomer la taille du sprite
             diamond.exist = true;
         }
+        for (_Life& life : G.lifes) {
+            life.IdTex = G2D::InitTextureFromString(life.Size, life.vivantTexture);
+            life.Size = life.Size * 1.5; // on peut zoomer la taille du sprite
+            life.exist = true;
+        }
+        for (_Chargeur& chargeur : G.chargeurs) {
+            chargeur.IdTex = G2D::InitTextureFromString(chargeur.Size, chargeur.texture);
+            chargeur.Size = chargeur.Size * 0.8; // on peut zoomer la taille du sprite
+            chargeur.exist = true;
+        }
         G.setTrap();
         for (_Trap& trap : G.traps) {
             trap.IdTex = G2D::InitTextureFromString(trap.Size, trap.texture);
@@ -946,6 +1057,14 @@ int gestion_ecran_jeu() {
                 G2D::InitTextureFromString(G.Bullet.Size, G.Bullet.texture);
             G.Bullet.Size = G.Bullet.Size * 0.8; // on peut zoomer la taille du sprite
             G.Heros.nbBullets--;
+            for (_Chargeur& chargeur : G.chargeurs)
+            {
+                if (chargeur.exist)
+                {
+                    chargeur.exist = false;
+                    break;
+                }
+            }
         }
     }
     if (G.Bullet.getExist()) {
