@@ -249,9 +249,9 @@ struct _Chest {
         "[    KWWWWWWWWWWWWK    ]"
         "[  KWGWWWWWWWWWWWWWWK  ]"
         "[ KWGKGGWWWWWWWWWWKWWK ]"
-        "[KWGKCKGWWKKKKWWWKCKWWK]"
+        "[KWGKKKGWWKKKKWWWKKKWWK]"
         "[KWGRRGGWKKYYKKWWWRRWWK]"
-        "[KWWRWWWWWKKKKWWWWRRWWK]"
+        "[KWWRWWWWWKKKKWWWWWRWWK]"
         "[ KWWWRWWWWWWWWWWWWWWK ]"
         "[  KWWWWWWWWWWWWWWWWK  ]"
         "[   KKKKKKKKKKKKKKKK   ]";
@@ -267,19 +267,19 @@ struct _Chest {
     }
 };
 struct _Diamond {
-    string texture = "[    GGGG    ]"
-        "[   GWWWWG   ]"
-        "[  GWCCCWCG  ]"
-        "[ GWWCCWCCCG ]"
-        "[ GWCWWWWCCG ]"
-        "[GWCWCCCCWCWG]"
-        "[GWCWCCCCWCCG]"
-        "[GWWWCCCCWCCG]"
-        "[GWCCWWWWCCCG]"
-        "[ GCCCCCCCCG ]"
-        "[ GWCCCCCCCG ]"
-        "[  GCCCCCCG  ]"
-        "[   GGGGGG   ]";
+    string texture = "[    KKKK    ]"
+        "[   KWWWWK   ]"
+        "[  KWCCCWCK  ]"
+        "[ KWWCCWCCCK ]"
+        "[ KWCWWWWCCK ]"
+        "[KWCWCCCCWCWK]"
+        "[KWCWCCCCWCCK]"
+        "[KWWWCCCCWCCK]"
+        "[KWCCWWWWCCCK]"
+        "[ KCCCCCCCCK ]"
+        "[ KWCCCCCCCK ]"
+        "[  KCCCCCCK  ]"
+        "[   KKKKKK   ]";
 
     V2 Size;
     int IdTex;
@@ -438,7 +438,7 @@ struct _Gun {
 struct _Chargeur 
 {
     string texture =
-        "[  GG  ]"
+        "[  KK  ]"
         "[ KYYK ]"
         "[ KYYK ]"
         "[ KYYK ]"
@@ -461,7 +461,7 @@ struct _Chargeur
 };
 
 struct _Bullet {
-    string textureNorth = "[  GG  ]"
+    string textureNorth = "[  KK  ]"
         "[ KYYK ]"
         "[ KYYK ]"
         "[ KYYK ]"
@@ -937,6 +937,9 @@ bool InterMomieMomie(_Momie& momie) {
     }
     return conditionMomie;
 }
+/**
+ * Collision Momie/mur,momie
+ */
 void collision(_Momie& momie) {
     V2 Dir[4] = { V2(0, 1), V2(1, 0), V2(0, -1), V2(-1, 0) };
     V2 newPos = momie.Pos + momie.Dir;
