@@ -23,7 +23,7 @@ using namespace std;
 
 struct _NiveauDonjon {
     string Map;
-    string Map2 =
+    string Map1 =
         "MMMMMMMMMMMMMMM"
         "M M           M"
         "M M M MMM MMM M"
@@ -39,7 +39,7 @@ struct _NiveauDonjon {
         "M M M MMMMMMM M"
         "M M      M    M"
         "MMMMMMMMMMMMMMM";
-    string Map1 =
+    string Map2 =
         "MMMMMMMMMMMMMMM"
         "M   M         M"
         "M M M MMM MMM M"
@@ -189,7 +189,7 @@ struct _Heros {
     void reset() {
         hasKey = false;
         hasGun = false;
-
+        nbBullets = 10;
         Pos = V2(45, 45);
     }
     Rectangle getRect() {
@@ -286,7 +286,8 @@ struct _Key {
 
     V2 Size;
     int IdTex;
-    V2 Pos = V2(440, 450);
+    V2 Pos ;
+    void setPos(int x, int y) { Pos = V2(x, y); }
     Rectangle getRect() {
         return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
     }
@@ -307,8 +308,8 @@ struct _Chest {
 
     V2 Size;
     int IdTex;
-    V2 Pos = V2(405, 50);
-
+    V2 Pos ;
+    void setPos(int x, int y) { Pos = V2(x, y); }
     bool isOpened = false;
     Rectangle getRect() {
         return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
@@ -478,7 +479,8 @@ struct _Gun {
 
     V2 Size;
     int IdTex;
-    V2 Pos = V2(45, 200);
+    V2 Pos ;
+    void setPos(int x, int y) { Pos = V2(x, y); }
     Rectangle getRect() {
         return Rectangle(Pos.x, Pos.y, Pos.x + Size.x, Pos.y + Size.y);
     }
@@ -628,10 +630,16 @@ struct GameData {
         else if (NiveauDonjon.getNiveau() == 2)
         {
             diamonds.push_back(_Diamond(V2(530, 367)));
-            diamonds.push_back(_Diamond(V2(48, 535)));
-            diamonds.push_back(_Diamond(V2(253, 290)));
-            diamonds.push_back(_Diamond(V2(492, 212)));
-            diamonds.push_back(_Diamond(V2(334, 52)));
+            diamonds.push_back(_Diamond(V2(530, 207)));
+            diamonds.push_back(_Diamond(V2(285, 450)));
+            diamonds.push_back(_Diamond(V2(450, 450)));
+            diamonds.push_back(_Diamond(V2(285, 367)));
+            diamonds.push_back(_Diamond(V2(450, 367)));
+            diamonds.push_back(_Diamond(V2(530, 450)));
+            diamonds.push_back(_Diamond(V2(248, 248)));
+            diamonds.push_back(_Diamond(V2(210, 50)));
+            diamonds.push_back(_Diamond(V2(365, 405)));
+
         }
         for (_Diamond& diamond : diamonds) {
             diamond.IdTex = G2D::InitTextureFromString(diamond.Size, diamond.texture);
@@ -648,19 +656,46 @@ struct GameData {
         momies.clear();
         if (difficulty >= 2) {
             // ? difficile
-            momies.push_back(_Momie(529, 380));
-            momies.push_back(_Momie(485, 205));
+            if (NiveauDonjon.getNiveau() == 1)
+            {
+                momies.push_back(_Momie(529, 380));
+                momies.push_back(_Momie(485, 205));
+            }
+            else if (NiveauDonjon.getNiveau() == 2)
+            {
+                momies.push_back(_Momie(529, 445));
+                momies.push_back(_Momie(529, 205));
+            }
         }
         if (difficulty >= 1) {
             // ? moyen
-            momies.push_back(_Momie(43, 525));
-            momies.push_back(_Momie(316, 45));
+            if (NiveauDonjon.getNiveau() == 1)
+            {
+                momies.push_back(_Momie(43, 525));
+                momies.push_back(_Momie(316, 45));
+            }
+            else if (NiveauDonjon.getNiveau() == 2)
+            {
+                momies.push_back(_Momie(43, 525));
+                momies.push_back(_Momie(280, 45));
+            }
+            
         }
         if (difficulty >= 0) {
             // ? facile
-            momies.push_back(_Momie(250, 250));
-            momies.push_back(_Momie(130, 420));
-            momies.push_back(_Momie(370, 470));
+            if (NiveauDonjon.getNiveau() == 1)
+            {
+                momies.push_back(_Momie(250, 250));
+                momies.push_back(_Momie(130, 420));
+                momies.push_back(_Momie(370, 470));
+            }
+            else if (NiveauDonjon.getNiveau() == 2)
+            {
+                momies.push_back(_Momie(250, 250));
+                momies.push_back(_Momie(130, 420));
+                momies.push_back(_Momie(370, 470));
+            }
+
         }
         for (_Momie& momie : momies) {
             momie.IdTex = G2D::InitTextureFromString(momie.Size, momie.texture);
@@ -671,17 +706,49 @@ struct GameData {
     void setTrap() {
         traps.clear();
         if (difficulty >= 2) {
+
             // ? difficile
-            traps.push_back(_Trap(363, 288));
+            if (NiveauDonjon.getNiveau() == 1)
+            {
+                traps.push_back(_Trap(363, 288));
+
+            }
+            else if (NiveauDonjon.getNiveau() == 2)
+            {
+                traps.push_back(_Trap(82, 285));
+                traps.push_back(_Trap(442, 285));
+            }
         }
         if (difficulty >= 1) {
             // ? moyen
-            traps.push_back(_Trap(202, 85));
+            if (NiveauDonjon.getNiveau() == 1)
+            {
+                traps.push_back(_Trap(202, 85));
+
+            }
+            else if (NiveauDonjon.getNiveau() == 2)
+            {
+                traps.push_back(_Trap(122, 405));
+                traps.push_back(_Trap(42, 405));
+            }
         }
         if (difficulty >= 0) {
             // ? facile
-            traps.push_back(_Trap(122, 405));
-            traps.push_back(_Trap(362, 485));
+            if (NiveauDonjon.getNiveau() == 1)
+            {
+                traps.push_back(_Trap(122, 405));
+                traps.push_back(_Trap(362, 485));
+            }
+            else if (NiveauDonjon.getNiveau() == 2)
+            {
+                traps.push_back(_Trap(362, 485));
+                traps.push_back(_Trap(322, 405));
+                traps.push_back(_Trap(362, 405));
+                traps.push_back(_Trap(402, 405));
+                traps.push_back(_Trap(362, 322));
+                traps.push_back(_Trap(402, 122));
+                traps.push_back(_Trap(202, 122));
+            }
         }
         for (_Trap& trap : traps) {
             trap.IdTex = G2D::InitTextureFromString(trap.Size, trap.texture);
@@ -719,7 +786,8 @@ void affichage_ecran_options() {
 }
 
 void affichage_init_partie() {
-    G2D::DrawStringFontMono(V2(220, 300), "Chargement...", 20, 3, Color::White);
+    string Niveau = "Niveau :  "  + to_string(G.NiveauDonjon.getNiveau());
+    G2D::DrawStringFontMono(V2(220, 300), Niveau, 20, 3, Color::White);
     G2D::DrawStringFontMono(V2(220, 100), "Appuyez sur ENTER", 16, 3, Color::Cyan);
     G2D::DrawCircle(V2(150, 250), 50, Color::Green);
     G2D::DrawCircle(V2(450, 450), 30, Color::Cyan);
@@ -752,6 +820,12 @@ void affichage_ecran_jeu() {
     // affichage du Chest
     G2D::DrawRectWithTexture(G.Chest.IdTex, G.Chest.Pos, G.Chest.Size);
 
+    // affichage des traps
+    for (_Trap& trap : G.traps) {
+        trap.IdTex = G2D::InitTextureFromString(trap.Size, trap.texture);
+        trap.Size = trap.Size * 1; // on peut zoomer la taille du sprite
+        G2D::DrawRectWithTexture(trap.IdTex, trap.Pos, trap.Size);
+    }
     // affichage des diamants
     for (_Diamond& diamond : G.diamonds) {
         if (diamond.exist) {
@@ -767,12 +841,7 @@ void affichage_ecran_jeu() {
             G2D::DrawRectWithTexture(chargeur.IdTex, chargeur.Pos, chargeur.Size);
         }
     }
-    // affichage des traps
-    for (_Trap& trap : G.traps) {
-        trap.IdTex = G2D::InitTextureFromString(trap.Size, trap.texture);
-        trap.Size = trap.Size * 1; // on peut zoomer la taille du sprite
-        G2D::DrawRectWithTexture(trap.IdTex, trap.Pos, trap.Size);
-    }
+    
     // affichage d'une Momie
     for (_Momie& momie : G.momies) {
         if (!momie.getMorte()) {
@@ -1056,9 +1125,17 @@ int InitPartie() {
     G.Chest.isOpened = false;
     if (G.NiveauDonjon.getNiveau() == 1)
     {
-        G.Heros.nbBullets = 10;
         G.Heros.score = 0;
         G.Heros.nbVies = 3;
+        G.Key.setPos(440, 450);
+        G.Chest.setPos(405, 50);
+        G.Gun.setPos(45, 200);
+    }
+    else if (G.NiveauDonjon.getNiveau() == 2)
+    {
+        G.Key.setPos(460, 50);
+        G.Chest.setPos(70, 530);
+        G.Gun.setPos(125, 205);
     }
     if (G2D::IsKeyPressed(Key::ENTER)) {
         G.setMomies();
@@ -1167,6 +1244,8 @@ int gestion_ecran_jeu() {
     if (G.Chest.isOpened) {
         if (G.NiveauDonjon.getNiveau() == 2)
         {
+            G.NiveauDonjon.setNiveau(1);
+            G.NiveauDonjon.setTexture();
             return 5;
         }
         else if(G.NiveauDonjon.getNiveau() == 1)
@@ -1178,6 +1257,8 @@ int gestion_ecran_jeu() {
 
     }
     if (G.Heros.nbVies <= 0) {
+        G.NiveauDonjon.setNiveau(1);
+        G.NiveauDonjon.setTexture();
         return 4;
     }
     return 3;
