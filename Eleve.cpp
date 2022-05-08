@@ -1149,12 +1149,9 @@ int InitPartie() {
             }
         }
         for (_Chargeur& chargeur : G.chargeurs) {
-            if (G.NiveauDonjon.getNiveau() == 1)
-            {
-                chargeur.IdTex = G2D::InitTextureFromString(chargeur.Size, chargeur.texture);
-                chargeur.Size = chargeur.Size * 0.8; // on peut zoomer la taille du sprite
-                chargeur.exist = true;
-            }
+            chargeur.IdTex = G2D::InitTextureFromString(chargeur.Size, chargeur.texture);
+            chargeur.Size = chargeur.Size * 0.8; // on peut zoomer la taille du sprite
+            chargeur.exist = true;
 
         }
         G.setTrap();
