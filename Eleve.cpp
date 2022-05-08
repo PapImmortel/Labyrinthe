@@ -21,6 +21,57 @@ using namespace std;
 #define COMPTEUR_TRAP 50
 #define MIN_TRAP 70
 
+struct _NiveauDonjon {
+    string Map;
+    string Map2 =
+        "MMMMMMMMMMMMMMM"
+        "M M           M"
+        "M M M MMM MMM M"
+        "M   M       M M"
+        "MMM M M MMM M M"
+        "M   M M     M M"
+        "M MMM MMM MMMMM"
+        "M   M  M      M"
+        "M M M  M M MM M"
+        "M M M  M M M  M"
+        "M M M MM M MMMM"
+        "M M M    M    M"
+        "M M M MMMMMMM M"
+        "M M      M    M"
+        "MMMMMMMMMMMMMMM";
+    string Map1 =
+        "MMMMMMMMMMMMMMM"
+        "M   M         M"
+        "M M M MMM MMM M"
+        "M M M M     M M"
+        "M M M M     MMM"
+        "M     M     M M"
+        "M MMM MMM MMM M"
+        "M   M  M      M"
+        "M M M  M M MM M"
+        "M M M  M M MM M"
+        "M MMM MM M MMMM"
+        "M   M M      MM"
+        "M M M M MMM  MM"
+        "M M     MMM  MMM"
+        "MMMMMMMMMMMMMMM";
+
+    int niveau;
+    void setNiveau(int _niveau) { niveau = _niveau; }
+    int getNiveau() { return niveau; }
+    void setTexture() {
+        if (niveau == 1)
+        {
+            Map = Map1;
+        }
+        else if (niveau == 2)
+        {
+            Map = Map2;
+        }
+    }
+    
+
+};
 struct Rectangle {
     int xMin, xMax, yMin, yMax;
     Rectangle(int _xMin, int _yMin, int _xMax, int _yMax) {
@@ -138,9 +189,7 @@ struct _Heros {
     void reset() {
         hasKey = false;
         hasGun = false;
-        nbBullets = 10;
-        score = 0;
-        nbVies = 3;
+
         Pos = V2(45, 45);
     }
     Rectangle getRect() {
@@ -255,7 +304,6 @@ struct _Chest {
         "[ KWWWRWWWWWWWWWWWWWWK ]"
         "[  KWWWWWWWWWWWWWWWWK  ]"
         "[   KKKKKKKKKKKKKKKK   ]";
-
 
     V2 Size;
     int IdTex;
@@ -550,26 +598,9 @@ struct _Bullet {
     }
 };
 struct GameData {
-
-    string Map =
-        "MMMMMMMMMMMMMMM"
-        "M M           M"
-        "M M M MMM MMM M"
-        "M   M       M M"
-        "MMM M M MMM M M"
-        "M   M M     M M"
-        "M MMM MMM MMMMM"
-        "M   M  M      M"
-        "M M M  M M MM M"
-        "M M M  M M M  M"
-        "M M M MM M MMMM"
-        "M M M    M    M"
-        "M M M MMMMMMM M"
-        "M M      M    M"
-        "MMMMMMMMMMMMMMM";
-
     // indique la pr�sence d'un mur � la case (x,y)
-    bool Mur(int x, int y) { return Map[(15 - y - 1) * 15 + x] == 'M'; }
+    _NiveauDonjon NiveauDonjon;
+    bool Mur(int x, int y) { return NiveauDonjon.Map[(15 - y - 1) * 15 + x] == 'M'; }
 
     int Lpix = 40; // largeur en pixels des cases du labyrinthe
 
@@ -579,17 +610,39 @@ struct GameData {
     _Gun Gun;
     _Bullet Bullet;
     _TexturePack TexturePack;
-
     int difficulty = 0;
     int ecran = 0;
 
     vector<_Momie> momies = {};
-    _Diamond diamonds[5] = { _Diamond(V2(530, 367)), _Diamond(V2(48, 535)),
-                            _Diamond(V2(253, 290)), _Diamond(V2(492, 212)),
-                            _Diamond(V2(334, 52)) };
+    vector<_Diamond> diamonds = {};
+    void setDiamonds() {
+        diamonds.clear();
+        if (NiveauDonjon.getNiveau() == 1)
+        {
+            diamonds.push_back(_Diamond(V2(530, 367)));
+            diamonds.push_back(_Diamond(V2(48, 535)));
+            diamonds.push_back(_Diamond(V2(253, 290)));
+            diamonds.push_back(_Diamond(V2(492, 212)));
+            diamonds.push_back(_Diamond(V2(334, 52)));
+        }
+        else if (NiveauDonjon.getNiveau() == 2)
+        {
+            diamonds.push_back(_Diamond(V2(530, 367)));
+            diamonds.push_back(_Diamond(V2(48, 535)));
+            diamonds.push_back(_Diamond(V2(253, 290)));
+            diamonds.push_back(_Diamond(V2(492, 212)));
+            diamonds.push_back(_Diamond(V2(334, 52)));
+        }
+        for (_Diamond& diamond : diamonds) {
+            diamond.IdTex = G2D::InitTextureFromString(diamond.Size, diamond.texture);
+            diamond.Size = diamond.Size * 1.5; // on peut zoomer la taille du sprite
+            diamond.exist = true;
+        }
+
+    }
+
     _Life lifes[3] = { _Life(V2(255,8)),_Life(V2(235,8)), _Life(V2(215,8)) };
     _Chargeur chargeurs[10] = { _Chargeur(V2(580,20)),_Chargeur(V2(580,5)), _Chargeur(V2(570,20)),_Chargeur(V2(570,5)),_Chargeur(V2(560,20)),_Chargeur(V2(560,5)),_Chargeur(V2(550,20)),_Chargeur(V2(550,5)),_Chargeur(V2(540,20)),_Chargeur(V2(540,5)) };
-
     vector<_Trap> traps = {};
     void setMomies() {
         momies.clear();
@@ -1001,22 +1054,31 @@ int gestion_ecran_options() {
 int InitPartie() {
     G.Heros.reset();
     G.Chest.isOpened = false;
+    if (G.NiveauDonjon.getNiveau() == 1)
+    {
+        G.Heros.nbBullets = 10;
+        G.Heros.score = 0;
+        G.Heros.nbVies = 3;
+    }
     if (G2D::IsKeyPressed(Key::ENTER)) {
         G.setMomies();
-        for (_Diamond& diamond : G.diamonds) {
-            diamond.IdTex = G2D::InitTextureFromString(diamond.Size, diamond.texture);
-            diamond.Size = diamond.Size * 1.5; // on peut zoomer la taille du sprite
-            diamond.exist = true;
-        }
+        G.setDiamonds();
         for (_Life& life : G.lifes) {
-            life.IdTex = G2D::InitTextureFromString(life.Size, life.vivantTexture);
-            life.Size = life.Size * 1.5; // on peut zoomer la taille du sprite
-            life.exist = true;
+            if (G.NiveauDonjon.getNiveau()==1)
+            {
+                life.IdTex = G2D::InitTextureFromString(life.Size, life.vivantTexture);
+                life.Size = life.Size * 1.5; // on peut zoomer la taille du sprite
+                life.exist = true;
+            }
         }
         for (_Chargeur& chargeur : G.chargeurs) {
-            chargeur.IdTex = G2D::InitTextureFromString(chargeur.Size, chargeur.texture);
-            chargeur.Size = chargeur.Size * 0.8; // on peut zoomer la taille du sprite
-            chargeur.exist = true;
+            if (G.NiveauDonjon.getNiveau() == 1)
+            {
+                chargeur.IdTex = G2D::InitTextureFromString(chargeur.Size, chargeur.texture);
+                chargeur.Size = chargeur.Size * 0.8; // on peut zoomer la taille du sprite
+                chargeur.exist = true;
+            }
+
         }
         G.setTrap();
         for (_Trap& trap : G.traps) {
@@ -1103,7 +1165,17 @@ int gestion_ecran_jeu() {
     }
 
     if (G.Chest.isOpened) {
-        return 5;
+        if (G.NiveauDonjon.getNiveau() == 2)
+        {
+            return 5;
+        }
+        else if(G.NiveauDonjon.getNiveau() == 1)
+        {
+            G.NiveauDonjon.setNiveau(2);
+            G.NiveauDonjon.setTexture();
+            return 2;
+        }
+
     }
     if (G.Heros.nbVies <= 0) {
         return 4;
@@ -1147,6 +1219,9 @@ void Logic() {
 
 void AssetsInit() {
     // Size passé en ref et texture en param
+    G.NiveauDonjon.setNiveau(1);
+    G.NiveauDonjon.setTexture();
+
     G.TexturePack.IdTexMur =
         G2D::InitTextureFromString(G.TexturePack.Size, G.TexturePack.textureMur);
     G.TexturePack.IdTexSol =
