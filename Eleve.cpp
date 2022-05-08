@@ -203,15 +203,18 @@ struct _Key {
 };
 
 struct _Chest {
-    string texture = 
-        "[    WWWWWWWWWWWW    ]"
-        "[  WGWWWWWWWWWWWWWW  ]"
-        "[ WGKGGWWWWWWWWWWKWW ]"
-        "[WGKCKGWWKKKKWWWKCKWW]"
-        "[WGRRGGWKKYYKKWWWRRWW]"
-        "[WWRWWWWWKKKKWWWWRRWW]"
-        "[ WWWRWWWWWWWWWWWWWW ]"
-        "[  WWWWWWWWWWWWWWWW  ]";
+    string texture =
+        "[     KKKKKKKKKKKK     ]"
+        "[    KWWWWWWWWWWWWK    ]"
+        "[  KWGWWWWWWWWWWWWWWK  ]"
+        "[ KWGKGGWWWWWWWWWWKWWK ]"
+        "[KWGKCKGWWKKKKWWWKCKWWK]"
+        "[KWGRRGGWKKYYKKWWWRRWWK]"
+        "[KWWRWWWWWKKKKWWWWRRWWK]"
+        "[ KWWWRWWWWWWWWWWWWWWK ]"
+        "[  KWWWWWWWWWWWWWWWWK  ]"
+        "[   KKKKKKKKKKKKKKKK   ]";
+
 
     V2 Size;
     int IdTex;
@@ -449,13 +452,13 @@ struct _Bullet {
 
     V2 getDirectionBullet() {
         if (texture == textureSouth)
-            return V2(0, -1);
+            return V2(0, -2);
         if (texture == textureNorth)
-            return V2(0, 1);
+            return V2(0, 2);
         if (texture == textureEast)
-            return V2(1, 0);
+            return V2(2, 0);
         if (texture == textureWeast)
-            return V2(-1, 0);
+            return V2(-2, 0);
         return V2(0, 0);
     }
     void setLastDirectionTexture(_Heros& heros) {
